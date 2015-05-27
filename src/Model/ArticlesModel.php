@@ -55,7 +55,7 @@ class ArticlesModel
      * @return mixed
      */
     /**
-     * Gets all albums.
+     * Gets all articles.
      *
      * @access public
      * @return array Result
@@ -68,7 +68,7 @@ class ArticlesModel
     }
 
     /**
-     * Gets single album data.
+     * Gets single article data.
      *
      * @access public
      * @param integer $id Record Id
@@ -90,17 +90,17 @@ class ArticlesModel
 
 
     /**
-     * Get all albums on page.
+     * Get all articles on page.
      *
      * @access public
      * @param integer $page Page number
      * @param integer $limit Number of records on single page
      * @return array Result
      */
-    public function getAlbumsPage($page, $limit)
+    public function getArticlesPage($page, $limit)
     {
         $query = 'SELECT article_id, title, content FROM articles';
-        $statement = $this->db->prepare($query);
+        $statement = $this->_db->prepare($query);
         $statement->bindValue('start', ($page-1)*$limit, \PDO::PARAM_INT);
         $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
         $statement->execute();
@@ -109,17 +109,17 @@ class ArticlesModel
     }
 
     /**
-     * Counts album pages.
+     * Counts article pages.
      *
      * @access public
      * @param integer $limit Number of records on single page
      * @return integer Result
      */
-    public function countAlbumsPages($limit)
+    public function countArticlesPages($limit)
     {
         $pagesCount = 0;
         $sql = 'SELECT COUNT(*) as pages_count FROM articles';
-        $result = $this->db->fetchAssoc($sql);
+        $result = $this->_db->fetchAssoc($sql);
         if ($result) {
             $pagesCount =  ceil($result['pages_count']/$limit);
         }
@@ -137,6 +137,39 @@ class ArticlesModel
     public function getCurrentPageNumber($page, $pagesCount)
     {
         return (($page < 1) || ($page > $pagesCount)) ? 1 : $page;
+    }
+
+    /* Save article.
+    *
+    * @access public
+    * @param array $article Articles data
+    * @retun mixed Result
+    */
+    public function saveArticle($article)
+    {
+        if (isset($article['id'])
+            && ($article['id'] != '')
+            && ctype_digit((string)$article['id'])) {
+            // update record
+            $id = $article['id'];
+            unset($article['id']);
+            return $this->_db->update('articles', $article, array('article_id' => $id));
+        } else {
+            // add new record
+            return $this->_db->insert('articles', $article);
+        }
+    }
+
+    public function removeArticle($article)
+    {
+        if (isset($article['id'])
+            && ($article['id'] != '')
+            && ctype_digit((string)$article['id'])) {
+            // update record
+            $id = $article['id'];
+            unset($article['id']);
+            return $this->_db->delete('articles', array('article_id' => $id));
+        }
     }
 
 

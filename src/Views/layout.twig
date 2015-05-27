@@ -13,6 +13,11 @@
     {% include 'header.twig' %}
 </div>
 <div id="content">
+    {% for flashMessage in app.session.getFlashBag.get('message') %}
+        <div class="alert alert-{{ flashMessage.type }}" role="alert">
+            {{ flashMessage.content }}
+        </div>
+    {% endfor %}
     {% block content %}{% endblock %}
 </div>
 </body>

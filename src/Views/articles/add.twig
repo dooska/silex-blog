@@ -1,0 +1,13 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{  'Dodaj artykuł'|trans }}{% endblock %}
+
+{% block content %}
+    <h1>
+        {{ 'Dodaj artykuł'|trans }}
+    </h1>
+    <form action="{{ url('articles_add') }}" method="post">
+        {{ form_widget(form) }}
+        <input type="submit" name="submit" value="{{ 'Save'|trans }}" />
+    </form>
+{% endblock %}
