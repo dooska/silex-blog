@@ -89,4 +89,55 @@ class ArticlesModel
     }
 
 
+    /**
+     * Get all albums on page.
+     *
+     * @access public
+     * @param integer $page Page number
+     * @param integer $limit Number of records on single page
+     * @return array Result
+     */
+    public function getAlbumsPage($page, $limit)
+    {
+        $query = 'SELECT article_id, title, content FROM articles';
+        $statement = $this->db->prepare($query);
+        $statement->bindValue('start', ($page-1)*$limit, \PDO::PARAM_INT);
+        $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
+        $statement->execute();
+        $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        return !$result ? array() : $result;
+    }
+
+    /**
+     * Counts album pages.
+     *
+     * @access public
+     * @param integer $limit Number of records on single page
+     * @return integer Result
+     */
+    public function countAlbumsPages($limit)
+    {
+        $pagesCount = 0;
+        $sql = 'SELECT COUNT(*) as pages_count FROM articles';
+        $result = $this->db->fetchAssoc($sql);
+        if ($result) {
+            $pagesCount =  ceil($result['pages_count']/$limit);
+        }
+        return $pagesCount;
+    }
+
+    /**
+     * Returns current page number.
+     *
+     * @access public
+     * @param integer $page Page number
+     * @param integer $pagesCount Number of all pages
+     * @return integer Page number
+     */
+    public function getCurrentPageNumber($page, $pagesCount)
+    {
+        return (($page < 1) || ($page > $pagesCount)) ? 1 : $page;
+    }
+
+
 }
