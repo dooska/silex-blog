@@ -18,7 +18,7 @@ $app->register(
         'db.options' => array(
             'driver'    => 'pdo_mysql',
             'host'      => 'localhost',
-            'dbname'    => 'silex-blog',
+            'dbname'    => '12_wojna',
             'user'      => '12_wojna',
             'password'  => 'X8z6b9c5w5',
             'charset'   => 'utf8',
