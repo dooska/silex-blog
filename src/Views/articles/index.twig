@@ -1,0 +1,28 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+<h2>Wszystkie artykuły</h2>
+        {% for flashMessage in app.session.getFlashBag.get('message') %}
+            {{ flashMessage.content }}
+        {% endfor %}
+        <div>
+            <table class = "table">
+                <thead>
+                <tr>
+                    <th>Tytuł</th>
+                    <th>Treść</th>
+                    <th>Akcja</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for article in articles %}
+                    <tr>
+                        <td>{{ article.title|e }}</td>
+                        <td>{{ article.content }}</td>
+                        <td><a href="{{ url('article_view', {'id': article.article_id}) }}" class="btn btn-default">Pokaż</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+{% endblock %}

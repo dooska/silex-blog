@@ -1,0 +1,16 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9">
+            {% if article %}
+                <h2>{{ article.title }}</h2>
+                <p>{{ article.content }}</p>
+            {% else %}
+                <p>Post nie istnieje</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <a href="{{ url('articles_index') }}" class="btn btn-default">Powrót do listy artykułów</a>
+{% endblock %}
