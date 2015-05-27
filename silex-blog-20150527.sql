@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `silex-blog` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `silex-blog`;
 -- MySQL dump 10.13  Distrib 5.5.40, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: silex-blog
