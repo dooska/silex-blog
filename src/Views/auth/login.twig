@@ -1,0 +1,14 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ 'Log in'|trans }}{% endblock %}
+
+{% block content %}
+    <h1>
+        {{ 'Login'|trans }}
+    </h1>
+    {{ error }}
+    <form action="{{ path('auth_login_check') }}" method="post">
+        {{ form_widget(form) }}
+        <input type="submit" name="submit" value="{{ 'Login'|trans }}" />
+    </form>
+{% endblock %}

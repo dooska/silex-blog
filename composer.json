@@ -9,13 +9,17 @@
         "symfony/locale": "2.5.2",
         "symfony/twig-bridge": "2.5.2",
         "doctrine/dbal": "2.2.*",
-        "symfony/security": "~2.3"
+        "symfony/security": "~2.3",
+        "symfony/security-csrf": "~2.3"
+
     },
     "autoload": {
         "psr-0": {
             "Controller" : "src/",
             "Model" : "src/",
-            "User" : "src/"
+            "Provider" : "src/",
+            "User" : "src/",
+            "Form" : "src/"
         }
     }
 }
