@@ -39,46 +39,46 @@ $app->register(
     )
 );
 
-/*$app->register(
-    new Silex\Provider\SecurityServiceProvider(), array(
+/* Auth */
+$app->register(
+    new Silex\Provider\SecurityServiceProvider(),
+    array(
         'security.firewalls' => array(
             'admin' => array(
                 'pattern' => '^.*$',
                 'form' => array(
-                    'login_path' => '/auth/login',
-                    'check_path' => '/user/login_check',
-                    'default_target_path'=> '/',
-                    'username_parameter' => 'form[username]',
-                    'password_parameter' => 'form[password]',
+                    'login_path' => 'auth_login',
+                    'check_path' => 'auth_login_check',
+                    'default_target_path'=> '/articles/index',
+                    'username_parameter' => 'loginForm[login]',
+                    'password_parameter' => 'loginForm[password]',
                 ),
-                'logout'  => true,
                 'anonymous' => true,
                 'logout' => array(
-                    'logout_path' => '/auth/logout'
+                    'logout_path' => 'auth_logout',
+                    'target_url' => '/articles/index'
                 ),
                 'users' => $app->share(
-                    function() use ($app) {
-                        return new User\UserProvider($app);
+                    function() use ($app)
+                    {
+                        return new Provider\UserProvider($app);
                     }
                 ),
             ),
         ),
         'security.access_rules' => array(
-            array('^/user$', 'ROLE_USER'),
-            array('^/user.*$', 'ROLE_USER'),
-            array('^/stocks$', 'ROLE_USER'),
-            array('^/stocks.*$', 'ROLE_USER'),
-            array('^/admin/.*$', 'ROLE_ADMIN'),
-            array('^/admin/$', 'ROLE_ADMIN'),
-
-
+            array('^/article.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
+            array('^/categories.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
+            array('^/register.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
+            array('^/auth.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
+            array('^/.+$', 'ROLE_ADMIN')
         ),
         'security.role_hierarchy' => array(
-            'ROLE_ADMIN' => array('ROLE_USER', 'ROLE_ANONYMUS'),
-            'ROLE_USER' => array('ROLE_ANONYMUS'),
+            'ROLE_ADMIN' => array('ROLE_USER'),
         ),
     )
-);*/
+);
+
 // Errors
 $app->error(
     function (\Exception $e, $code) use ($app) {
@@ -98,7 +98,11 @@ $app->register(new Silex\Provider\UrlGeneratorServiceProvider());
 
 /* Routing */
 $app->mount('/', new Controller\IndexController());
-$app->mount('/articles/', new Controller\ArticlesController());
+$app->mount('/register', new Controller\RegistrationController());
+$app->mount('/articles', new Controller\ArticlesController());
+$app->mount('/categories', new Controller\CategoriesController());
+$app->mount('/auth/', new Controller\AuthController());
+
 
 $app['debug'] = true;
 $app->run();
