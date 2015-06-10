@@ -1,6 +1,6 @@
 <?php
 /**
- * Article controller
+ * Category controller
  *
  * PHP version 5
  *
@@ -18,11 +18,10 @@ use Silex\Application;
 use Silex\ControllerProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints as Assert;
-use Model\ArticlesModel;
 use Model\CategoriesModel;
 
 /**
- * Class ArticleController
+ * Class CategoryController
  *
  * @category Controller
  * @package  Controller
@@ -34,19 +33,17 @@ use Model\CategoriesModel;
  * @uses Silex\ControllerProviderInterface
  * @uses Symfony\Component\HttpFoundation\Request
  * @uses Symfony\Component\Validator\Constraints
- * @uses Model\ArticleModel
- * @uses Model\CategoriesModel
+ * @uses Model\CategoryModel
  */
-class ArticlesController implements ControllerProviderInterface
+class CategoriesController implements ControllerProviderInterface
 {
     /**
-     * Article Model object.
+     * Category Model object.
      *
      * @var $_model
      * @access protected
      */
     protected $_model;
-    protected $_category_model;
 
     /**
      *
@@ -57,30 +54,29 @@ class ArticlesController implements ControllerProviderInterface
      */
     public function connect(Application $app)
     {
-        $this->_model = new ArticlesModel($app);
-        $this->_category_model = new CategoriesModel($app);
-        $articlesController = $app['controllers_factory'];
-        $articlesController->post('/add', array($this, 'addAction'));
-        $articlesController->match('/add', array($this, 'addAction'))
-            ->bind('articles_add');
-        $articlesController->match('/add/', array($this, 'addAction'));
-        $articlesController->post('/edit/{id}', array($this, 'editAction'));
-        $articlesController->match('/edit/{id}', array($this, 'editAction'))
-            ->bind('articles_edit');
-        $articlesController->match('/edit/{id}/', array($this, 'editAction'));
-        $articlesController->post('/delete/{id}', array($this, 'deleteAction'));
-        $articlesController->match('/delete/{id}', array($this, 'deleteAction'))
-            ->bind('articles_delete');
-        $articlesController->match('/delete/{id}/', array($this, 'deleteAction'));
-        $articlesController->get('/view/{id}', array($this, 'viewAction'))
-            ->bind('articles_view');
-        $articlesController->get('/view/{id}/', array($this, 'viewAction'));
-        $articlesController->get('/index', array($this, 'indexAction'));
-        $articlesController->get('/index/', array($this, 'indexAction'))
-            ->bind('articles_index');
-//        $articlesController->get('/{page}', array($this, 'indexAction'))
-//            ->value('page', 1)->bind('articles_index');
-        return $articlesController;
+        $this->_model = new CategoriesModel($app);
+        $categoriesController = $app['controllers_factory'];
+        $categoriesController->post('/add', array($this, 'addAction'));
+        $categoriesController->match('/add', array($this, 'addAction'))
+            ->bind('categories_add');
+        $categoriesController->match('/add/', array($this, 'addAction'));
+        $categoriesController->post('/edit/{id}', array($this, 'editAction'));
+        $categoriesController->match('/edit/{id}', array($this, 'editAction'))
+            ->bind('categories_edit');
+        $categoriesController->match('/edit/{id}/', array($this, 'editAction'));
+        $categoriesController->post('/delete/{id}', array($this, 'deleteAction'));
+        $categoriesController->match('/delete/{id}', array($this, 'deleteAction'))
+            ->bind('categories_delete');
+        $categoriesController->match('/delete/{id}/', array($this, 'deleteAction'));
+        $categoriesController->get('/view/{id}', array($this, 'viewAction'))
+            ->bind('categories_view');
+        $categoriesController->get('/view/{id}/', array($this, 'viewAction'));
+        $categoriesController->get('/index', array($this, 'indexAction'));
+        $categoriesController->get('/index/', array($this, 'indexAction'))
+            ->bind('categories_index');;
+//        $categoriesController->get('/{page}', array($this, 'indexAction'))
+//            ->value('page', 1)->bind('categories_index');
+        return $categoriesController;
     }
 
     /**
@@ -95,14 +91,14 @@ class ArticlesController implements ControllerProviderInterface
     {
         $pageLimit = 3;
         $page = (int) $request->get('page', 1);
-        $articlesModel = new ArticlesModel($app);
-        $pagesCount = $articlesModel->countArticlesPages($pageLimit);
-        $page = $articlesModel->getCurrentPageNumber($page, $pagesCount);
-        $articles = $articlesModel->getArticlesPage($page, $pageLimit);
+        $categoriesModel = new CategoriesModel($app);
+        $pagesCount = $categoriesModel->countCategoriesPages($pageLimit);
+        $page = $categoriesModel->getCurrentPageNumber($page, $pagesCount);
+        $categories = $categoriesModel->getCategoriesPage($page, $pageLimit);
         $this->view['paginator']
             = array('page' => $page, 'pagesCount' => $pagesCount);
-        $this->view['articles'] = $articles;
-        return $app['twig']->render('articles/index.twig', $this->view);
+        $this->view['categories'] = $categories;
+        return $app['twig']->render('categories/index.twig', $this->view);
     }
 
     /**
@@ -116,9 +112,10 @@ class ArticlesController implements ControllerProviderInterface
     public function viewAction(Application $app, Request $request)
     {
         $id = (int)$request->get('id', null);
-        $articlesModel = new ArticlesModel($app);
-        $this->view['article'] = $articlesModel->getArticle($id);
-        return $app['twig']->render('articles/view.twig', $this->view);
+        $categoriesModel = new CategoriesModel($app);
+        $this->view['category'] = $categoriesModel->getCategory($id);
+        $this->view['category_articles'] = $categoriesModel->getCategoryArticles($id);
+        return $app['twig']->render('categories/view.twig', $this->view);
     }
 
 
@@ -133,50 +130,14 @@ class ArticlesController implements ControllerProviderInterface
     public function addAction(Application $app, Request $request)
     {
         // default values:
-        $data = array(
-            'title' => 'Title',
-            'content' => 'Content',
-        );
-        $categoriesArray = array();
 
-        //tworzy tablicę asocjacyjną z tabeli kategorii
-        $categories = $this->_category_model->getAll();
-        foreach ($categories as $category) {
-            $categoriesArray[$category['category_id']] = $category['category_name'];
-        }
-
-
-        $form = $app['form.factory']->createBuilder('form', $data)
+        $form = $app['form.factory']->createBuilder('form')
             ->add(
-                'title', 'text',
+                'category_name', 'text',
                 array(
                     'constraints' => array(
                         new Assert\NotBlank(),
-                        new Assert\Length(array('min' => 5))
-                    ),
-                    'attr' => array(
-                        'class' => 'form-control'
-                    )
-                )
-            )
-            ->add(
-                'content', 'textarea',
-                array(
-                    'constraints' => array(
-                        new Assert\NotBlank(),
-                        new Assert\Length(array('min' => 5))
-                    ),
-                    'attr' => array(
-                        'class' => 'form-control'
-                    )
-                )
-            )
-            ->add(
-                'category_id', 'choice',
-                array(
-                    'choices' => $categoriesArray,
-                    'constraints' => array(
-                        new Assert\NotBlank(),
+                        new Assert\Length(array('min' => 3))
                     ),
                     'attr' => array(
                         'class' => 'form-control'
@@ -188,22 +149,22 @@ class ArticlesController implements ControllerProviderInterface
 
         if ($form->isValid()) {
             $data = $form->getData();
-            $articlesModel = new ArticlesModel($app);
-            $articlesModel->saveArticle($data);
+            $categoriesModel = new CategoriesModel($app);
+            $categoriesModel->saveCategory($data);
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nowy wpis.')
+                    'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nową kategorię.')
                 )
             );
             return $app->redirect(
-                $app['url_generator']->generate('articles_index'),
+                $app['url_generator']->generate('categories_index'),
                 301
             );
         }
 
         $this->view['form'] = $form->createView();
 
-        return $app['twig']->render('articles/add.twig', $this->view);
+        return $app['twig']->render('categories/add.twig', $this->view);
     }
 
     /**
@@ -217,13 +178,13 @@ class ArticlesController implements ControllerProviderInterface
     public function editAction(Application $app, Request $request)
     {
 
-        $articlesModel = new ArticlesModel($app);
+        $categoriesModel = new CategoriesModel($app);
         $id = (int) $request->get('id', 0);
-        $article = $articlesModel->getArticle($id);
+        $category = $categoriesModel->getCategory($id);
 
-        if (count($article)) {
+        if (count($category)) {
 
-            $form = $app['form.factory']->createBuilder('form', $article)
+            $form = $app['form.factory']->createBuilder('form', $category)
                 ->add(
                     'id', 'hidden',
                     array(
@@ -235,20 +196,11 @@ class ArticlesController implements ControllerProviderInterface
                     )
                 )
                 ->add(
-                    'title', 'text',
+                    'category_name', 'text',
                     array(
                         'constraints' => array(
                             new Assert\NotBlank(),
-                            new Assert\Length(array('min' => 5))
-                        )
-                    )
-                )
-                ->add(
-                    'content', 'text',
-                    array(
-                        'constraints' => array(
-                            new Assert\NotBlank(),
-                            new Assert\Length(array('min' => 5))
+                            new Assert\Length(array('min' => 3))
                         )
                     )
                 )
@@ -257,15 +209,15 @@ class ArticlesController implements ControllerProviderInterface
 
             if ($form->isValid()) {
                 $data = $form->getData();
-                $articlesModel = new ArticlesModel($app);
-                $articlesModel->saveArticle($data);
+                $categoriesModel = new CategoriesModel($app);
+                $categoriesModel->saveCategory($data);
                 $app['session']->getFlashBag()->add(
                     'message', array(
                         'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś wpis.')
                     )
                 );
                 return $app->redirect(
-                    $app['url_generator']->generate('articles_index'),
+                    $app['url_generator']->generate('categories_index'),
                     301
                 );
             }
@@ -280,21 +232,21 @@ class ArticlesController implements ControllerProviderInterface
                 )
             );
             return $app->redirect(
-                $app['url_generator']->generate('articles_index'),
+                $app['url_generator']->generate('categories_index'),
                 301
             );
         }
 
-        return $app['twig']->render('articles/edit.twig', $this->view);
+        return $app['twig']->render('categories/edit.twig', $this->view);
     }
 
     public function deleteAction(Application $app, Request $request)
     {
-        $articlesModel = new ArticlesModel($app);
+        $categoriesModel = new CategoriesModel($app);
         $id = (int) $request->get('id', 0);
-        $article = $articlesModel->getArticle($id);
+        $category = $categoriesModel->getCategory($id);
 
-        if (count($article)) {
+        if (count($category)) {
             $data = array();
             $form = $app['form.factory']->createBuilder('form', $data)
                 ->add(
@@ -313,7 +265,7 @@ class ArticlesController implements ControllerProviderInterface
                     $data = $form->getData();
 
                     try {
-                        $this->_model->removeArticle($data);
+                        $this->_model->removeCategory($data);
 
                         $app['session']->getFlashBag()->add(
                             'message', array(
@@ -324,7 +276,7 @@ class ArticlesController implements ControllerProviderInterface
                         );
                         return $app->redirect(
                             $app['url_generator']->generate(
-                                'articles_index'
+                                'categories_index'
                             ), 301
                         );
                     } catch (\Exception $e) {
@@ -333,7 +285,7 @@ class ArticlesController implements ControllerProviderInterface
                 } else {
                     return $app->redirect(
                         $app['url_generator']->generate(
-                            'articles_index'
+                            'categories_index'
                         ), 301
                     );
                 }
@@ -351,11 +303,11 @@ class ArticlesController implements ControllerProviderInterface
             );
             return $app->redirect(
                 $app['url_generator']->generate(
-                    'articles_index'
+                    'categories_index'
                 ), 301
             );
         }
-        return $app['twig']->render('articles/delete.twig', $this->view);
+        return $app['twig']->render('categories/delete.twig', $this->view);
 
     }
 }

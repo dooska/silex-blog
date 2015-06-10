@@ -45,6 +45,9 @@ class LoginForm extends AbstractType
                 'constraints' => array(
                     new Assert\NotBlank(),
                     new Assert\Length(array('min' => 8, 'max' => 16))
+                ),
+                'attr' => array(
+                    'class' => 'form-control'
                 )
             )
         )
@@ -55,6 +58,9 @@ class LoginForm extends AbstractType
                     'constraints' => array(
                         new Assert\NotBlank(),
                         new Assert\Length(array('min' => 8))
+                    ),
+                    'attr' => array(
+                        'class' => 'form-control'
                     )
                 )
             );

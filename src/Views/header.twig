@@ -15,7 +15,8 @@
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="{{ url('articles_index') }}">Artykuły <span class="sr-only">(current)</span></a></li>
+                    <li class=""><a href="{{ url('articles_index') }}">Artykuły <span class="sr-only">(current)</span></a></li>
+                    <li class=""><a href="{{ url('categories_index') }}">Kategorie <span class="sr-only">(current)</span></a></li>
                     {% if is_granted('IS_AUTHENTICATED_FULLY') %}
                     <li>
                         <a href="{{ url('auth_logout') }}" title="{{ 'Logout'|trans }}">{{ 'Logout'|trans }}</a>
@@ -25,6 +26,7 @@
                         <a href="{{ url('auth_login') }}" title="{{ 'Login'|trans }}">{{ 'Login'|trans }}</a>
                     </li>
                     {% endif %}
+                    <li class=""><a href="{{ url('register') }}">Rejestracja <span class="sr-only">(current)</span></a></li>
                 </ul>
             </div><!-- /.navbar-collapse -->
         </div><!-- /.container-fluid -->

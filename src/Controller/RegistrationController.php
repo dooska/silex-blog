@@ -47,7 +47,7 @@ class RegistrationController implements ControllerProviderInterface
         $this->_model = new UsersModel($app);
         $registrationController = $app['controllers_factory'];
         $registrationController->match('/', array($this, 'register'))
-            ->bind('/register');
+            ->bind('register');
         $registrationController->match('/success', array($this, 'success'))
             ->bind('/register/success');
         return $registrationController;

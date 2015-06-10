@@ -27,7 +27,7 @@ use Silex\Application;
  * @uses Doctrine\DBAL\DBALException
  * @uses Silex\Application
  */
-class ArticlesModel
+class CategoriesModel
 {
     /**
      * Database access object.
@@ -50,34 +50,30 @@ class ArticlesModel
     }
 
     /**
-     * Gets table with all stocks
-     *
-     * @return mixed
-     */
-    /**
-     * Gets all articles.
+     * Gets all categories.
      *
      * @access public
      * @return array Result
      */
     public function getAll()
     {
-        $query = 'SELECT article_id, title, content FROM articles';
+        $query = 'SELECT category_id, `category_name` FROM categories';
         $result = $this->_db->fetchAll($query);
         return !$result ? array() : $result;
     }
 
+
     /**
-     * Gets single article data.
+     * Gets single category data.
      *
      * @access public
      * @param integer $id Record Id
      * @return array Result
      */
-    public function getArticle($id)
+    public function getCategory($id)
     {
         if (($id != '') && ctype_digit((string)$id)) {
-            $query = 'SELECT article_id, title, content FROM articles WHERE article_id= :id';
+            $query = 'SELECT category_id, `category_name` FROM categories WHERE category_id= :id';
             $statement = $this->_db->prepare($query);
             $statement->bindValue('id', $id, \PDO::PARAM_INT);
             $statement->execute();
@@ -88,18 +84,36 @@ class ArticlesModel
         }
     }
 
+    /**
+     * Gets single category data.
+     *
+     * @access public
+     * @param integer $id Record Id
+     * @return array Result
+     */
+    public function getCategoryArticles($id)
+    {
+        if (($id != '') && ctype_digit((string)$id)) {
+            $query = 'SELECT articles.title,articles.content, articles.category_id
+                      FROM articles
+                    WHERE articles.category_id = ?';
+            $result = $this->_db->fetchAll($query, array($id));
+            return $result;
+        }
+    }
+
 
     /**
-     * Get all articles on page.
+     * Get all categories on page.
      *
      * @access public
      * @param integer $page Page number
      * @param integer $limit Number of records on single page
      * @return array Result
      */
-    public function getArticlesPage($page, $limit)
+    public function getCategoriesPage($page, $limit)
     {
-        $query = 'SELECT article_id, title, content, category_id FROM articles';
+        $query = 'SELECT category_id, `category_name` FROM categories';
         $statement = $this->_db->prepare($query);
         $statement->bindValue('start', ($page-1)*$limit, \PDO::PARAM_INT);
         $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
@@ -109,16 +123,16 @@ class ArticlesModel
     }
 
     /**
-     * Counts article pages.
+     * Counts category pages.
      *
      * @access public
      * @param integer $limit Number of records on single page
      * @return integer Result
      */
-    public function countArticlesPages($limit)
+    public function countCategoriesPages($limit)
     {
         $pagesCount = 0;
-        $sql = 'SELECT COUNT(*) as pages_count FROM articles';
+        $sql = 'SELECT COUNT(*) as pages_count FROM categories';
         $result = $this->_db->fetchAssoc($sql);
         if ($result) {
             $pagesCount =  ceil($result['pages_count']/$limit);
@@ -139,36 +153,36 @@ class ArticlesModel
         return (($page < 1) || ($page > $pagesCount)) ? 1 : $page;
     }
 
-    /* Save article.
+    /* Save category.
     *
     * @access public
-    * @param array $article Articles data
+    * @param array $category Categories data
     * @retun mixed Result
     */
-    public function saveArticle($article)
+    public function saveCategory($category)
     {
-        if (isset($article['id'])
-            && ($article['id'] != '')
-            && ctype_digit((string)$article['id'])) {
+        if (isset($category['id'])
+            && ($category['id'] != '')
+            && ctype_digit((string)$category['id'])) {
             // update record
-            $id = $article['id'];
-            unset($article['id']);
-            return $this->_db->update('articles', $article, array('article_id' => $id));
+            $id = $category['id'];
+            unset($category['id']);
+            return $this->_db->update('categories', $category, array('category_id' => $id));
         } else {
             // add new record
-            return $this->_db->insert('articles', $article);
+            return $this->_db->insert('categories', $category);
         }
     }
 
-    public function removeArticle($article)
+    public function removeCategory($category)
     {
-        if (isset($article['id'])
-            && ($article['id'] != '')
-            && ctype_digit((string)$article['id'])) {
+        if (isset($category['id'])
+            && ($category['id'] != '')
+            && ctype_digit((string)$category['id'])) {
             // update record
-            $id = $article['id'];
-            unset($article['id']);
-            return $this->_db->delete('articles', array('article_id' => $id));
+            $id = $category['id'];
+            unset($category['id']);
+            return $this->_db->delete('categories', array('category_id' => $id));
         }
     }
 

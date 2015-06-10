@@ -1,0 +1,13 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{  'Dodaj kategorię'|trans }}{% endblock %}
+
+{% block content %}
+    <h1>
+        {{ 'Dodaj kategorię'|trans }}
+    </h1>
+    <form action="{{ url('categories_add') }}" method="post">
+        {{ form_widget(form, { 'attr': {'class': 'form-horizontal'}}) }}
+        <input type="submit" name="submit" class="btn btn-primary" value="{{ 'Save'|trans }}" />
+    </form>
+{% endblock %}
