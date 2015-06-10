@@ -70,6 +70,9 @@ class RegistrationController implements ControllerProviderInterface
                 'login', 'text', array(
                     'constraints' => array(
                         new Assert\NotBlank()
+                    ),
+                    'attr' => array(
+                        'class' => 'form-control'
                     )
                 )
             )
@@ -83,6 +86,9 @@ class RegistrationController implements ControllerProviderInterface
                                 'message' => 'Email nie jest poprawny'
                             )
                         )
+                    ),
+                    'attr' => array(
+                        'class' => 'form-control'
                     )
                 )
             )
@@ -91,6 +97,9 @@ class RegistrationController implements ControllerProviderInterface
                     'label' => 'Hasło',
                     'constraints' => array(
                         new Assert\NotBlank()
+                    ),
+                    'attr' => array(
+                        'class' => 'form-control'
                     )
                 )
             )
@@ -99,6 +108,9 @@ class RegistrationController implements ControllerProviderInterface
                     'label' => 'Potwierdź hasło',
                     'constraints' => array(
                         new Assert\NotBlank()
+                    ),
+                    'attr' => array(
+                        'class' => 'form-control'
                     )
                 )
             )
