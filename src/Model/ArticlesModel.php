@@ -171,6 +171,18 @@ class ArticlesModel
             return $this->_db->delete('articles', array('article_id' => $id));
         }
     }
+    public function checkArticleId($article_id)
+    {
+        $sql = 'SELECT * FROM articles WHERE article_id=?';
+        $result = $this->_db->fetchAll($sql, array($article_id));
+
+        if ($result) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
 
 }

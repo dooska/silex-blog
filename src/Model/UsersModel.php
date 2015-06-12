@@ -176,4 +176,57 @@ class UsersModel
         }
     }
 
+    /**
+     * Get current logged user id
+     *
+     * @param $app
+     *
+     * @access public
+     * @return mixed
+     */
+    public function getIdCurrentUser($app)
+    {
+
+        $login = $this->getCurrentUser($app);
+        $iduser = $this->getUserByLogin($login);
+
+        return $iduser['iduser'];
+    }
+
+    /**
+     * Get information about actual logged user
+     *
+     * @param $app
+     *
+     * @access protected
+     * @return mixed
+     */
+    protected function getCurrentUser($app)
+    {
+        $token = $app['security']->getToken();
+
+        if (null !== $token) {
+            $user = $token->getUser()->getUsername();
+        }
+
+        return $user;
+    }
+
+    /**
+     * Check if user is logged
+     *
+     * @param Application $app
+     *
+     * @access public
+     * @return bool
+     */
+    public function _isLoggedIn(Application $app)
+    {
+        if ('anon.' !== $user = $app['security']->getToken()->getUser()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }

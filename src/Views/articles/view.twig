@@ -13,4 +13,30 @@
     </div>
 
     <a href="{{ url('articles_index') }}" class="btn btn-default">Powrót do listy artykułów</a>
+    <div class="comments">
+        {% if comments %}
+            <h4>Komentarze</h4>
+            {% for comment in comments %}
+                <div class="comment col-xs-12 col-sm-12 col-md-9 col-lg-9">
+                    <p>{{ comment.comment_content }}</p>
+                    <a href="{{ url('comments_edit', {'id': comment.comment_id}) }}"
+                       title="{{ 'Edit article'|trans }}">{{ 'Edytuj komentarz'|trans }}</a>
+                    <a href="{{ url('comments_delete', {'id': article.article_id}) }}"
+                       title="{{ 'Delete article'|trans }}">{{ 'Usuń komentarz'|trans }}</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Brak komentarzy</p>
+        {% endif %}
+        {% if article %}
+        <a href="{{ url('comments_add', {'article_id': article.article_id}) }}"
+           class="btn btn-primary"
+           title="{{ 'Add comment'|trans }}">{{ 'Dodaj komentarz'|trans }}</a>
+        {% else %}
+            <a href="{{ url('comments_add', {'article_id': app.request.get('article_id')}) }}"
+               class="btn btn-primary"
+               title="{{ 'Add comment'|trans }}">{{ 'Dodaj komentarz'|trans }}</a>
+        {% endif %}
+
+    </div>
 {% endblock %}

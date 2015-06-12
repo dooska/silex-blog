@@ -1,0 +1,17 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+    <hr>
+    <h2 class="intro-text text-center">
+        Usuń komentarz
+    </h2>
+    <hr>
+    <div>
+        <h3>Czy na pewno chcesz usunąć ten komentarz?</h3>
+
+        <form action="#" method="post">
+            {{ form_widget(form) }}
+        </form>
+    </div>
+
+{% endblock %}

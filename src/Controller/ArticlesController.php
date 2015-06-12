@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints as Assert;
 use Model\ArticlesModel;
 use Model\CategoriesModel;
+use Model\CommentsModel;
 
 /**
  * Class ArticleController
@@ -47,6 +48,7 @@ class ArticlesController implements ControllerProviderInterface
      */
     protected $_model;
     protected $_category_model;
+    protected $_comments_model;
 
     /**
      *
@@ -59,6 +61,7 @@ class ArticlesController implements ControllerProviderInterface
     {
         $this->_model = new ArticlesModel($app);
         $this->_category_model = new CategoriesModel($app);
+        $this->_comments_model = new CommentsModel($app);
         $articlesController = $app['controllers_factory'];
         $articlesController->post('/add', array($this, 'addAction'));
         $articlesController->match('/add', array($this, 'addAction'))
@@ -116,8 +119,8 @@ class ArticlesController implements ControllerProviderInterface
     public function viewAction(Application $app, Request $request)
     {
         $id = (int)$request->get('id', null);
-        $articlesModel = new ArticlesModel($app);
-        $this->view['article'] = $articlesModel->getArticle($id);
+        $this->view['article'] = $this->_model->getArticle($id);
+        $this->view['comments'] = $this->_comments_model->getCommentsList($id);
         return $app['twig']->render('articles/view.twig', $this->view);
     }
 
