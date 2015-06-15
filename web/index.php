@@ -71,6 +71,7 @@ $app->register(
             array('^/categories.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
             array('^/register.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
             array('^/auth.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
+            array('^/comments.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
             array('^/.+$', 'ROLE_ADMIN')
         ),
         'security.role_hierarchy' => array(
@@ -102,6 +103,7 @@ $app->mount('/register', new Controller\RegistrationController());
 $app->mount('/articles', new Controller\ArticlesController());
 $app->mount('/categories', new Controller\CategoriesController());
 $app->mount('/auth/', new Controller\AuthController());
+$app->mount('/comments/', new Controller\CommentsController());
 
 
 $app['debug'] = true;
