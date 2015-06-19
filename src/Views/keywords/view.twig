@@ -1,0 +1,38 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9">
+            {% if keyword %}
+                <h2>Posty ze słowem kluczowym {{ keyword.word }}</h2>
+            {% else %}
+                <p>Słowo kluczowe nie istnieje</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9">
+            {% if keyword_articles %}
+                <table class="table">
+                    <thead>
+                    <th>Tytuł posta</th>
+                    <th>Treść posta</th>
+                    <th>Akcja</th>
+                    </thead>
+                {% for keyword in keyword_articles %}
+                    <tr>
+                        <td>{{ keyword.title }}</td>
+                        <td>{{ keyword.content }}</td>
+                        <td><a href="{{ url('articles_view', {'id': keyword.keyword_id}) }}" class="btn btn-default">Pokaż</a></td>
+                    </tr>
+                {% endfor %}
+                </table>
+
+            {% else %}
+                <p>Posty z danym słowem kluczowym nie istnieją</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <a href="{{ url('keywords_index') }}" class="btn btn-default">Powrót do listy słów kluczowych</a>
+{% endblock %}

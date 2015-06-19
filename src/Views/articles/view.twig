@@ -1,10 +1,16 @@
 {% extends 'layout.twig' %}
 
 {% block content %}
+    <a href="{{ url('articles_index') }}" class="btn btn-default">Powrót do listy artykułów</a>
     <div class="row">
         <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9">
             {% if article %}
                 <h2>{{ article.title }}</h2>
+                <span>Słowa kluczowe: </span>
+                {% for keyword in keywords %}
+                    {{ keyword.word }}
+                {% endfor %}
+                <a href="{{ url('connect_keyword', {'id': article.article_id}) }}" class="btn btn-default">Dodaj słowo kluczowe</a>
                 <p>{{ article.content }}</p>
             {% else %}
                 <p>Post nie istnieje</p>
@@ -12,7 +18,6 @@
         </div>
     </div>
 
-    <a href="{{ url('articles_index') }}" class="btn btn-default">Powrót do listy artykułów</a>
     <div class="comments">
         {% if comments %}
             <h4>Komentarze</h4>
@@ -29,9 +34,9 @@
             <p>Brak komentarzy</p>
         {% endif %}
         {% if article %}
-        <a href="{{ url('comments_add', {'article_id': article.article_id}) }}"
-           class="btn btn-primary"
-           title="{{ 'Add comment'|trans }}">{{ 'Dodaj komentarz'|trans }}</a>
+            <a href="{{ url('comments_add', {'article_id': article.article_id}) }}"
+               class="btn btn-primary"
+               title="{{ 'Add comment'|trans }}">{{ 'Dodaj komentarz'|trans }}</a>
         {% else %}
             <a href="{{ url('comments_add', {'article_id': app.request.get('article_id')}) }}"
                class="btn btn-primary"

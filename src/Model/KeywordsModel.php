@@ -4,7 +4,7 @@
  *
  * PHP version 5
  *
- * @category Model
+ * @keyword Model
  * @package  Model
  * @author   Dominika Wojna
  * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
@@ -18,7 +18,7 @@ use Silex\Application;
 /**
  * Class ProjectsModel
  *
- * @category Model
+ * @keyword Model
  * @package  Model
  * @author   Dominika Wojna
  * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
@@ -27,7 +27,7 @@ use Silex\Application;
  * @uses Doctrine\DBAL\DBALException
  * @uses Silex\Application
  */
-class ArticlesModel
+class KeywordsModel
 {
     /**
      * Database access object.
@@ -50,34 +50,48 @@ class ArticlesModel
     }
 
     /**
-     * Gets table with all stocks
-     *
-     * @return mixed
-     */
-    /**
-     * Gets all articles.
+     * Gets all keywords.
      *
      * @access public
      * @return array Result
      */
     public function getAll()
     {
-        $query = 'SELECT article_id, title, content FROM articles';
+        $query = 'SELECT * FROM keywords';
         $result = $this->_db->fetchAll($query);
         return !$result ? array() : $result;
     }
 
     /**
-     * Gets single article data.
+     * Gets keywords array.
+     *
+     * @access public
+     * @return array Result
+     */
+    public function getKeywordsArray()
+    {
+        $keywordsArray = array();
+
+        //tworzy tablicę asocjacyjną z tabeli kategorii
+        $keywords = $this->getAll();
+
+        foreach ($keywords as $keyword) {
+            $keywordsArray[$keyword['keyword_id']] = $keyword['word'];
+        }
+        return $keywordsArray;
+    }
+
+    /**
+     * Gets single keyword data.
      *
      * @access public
      * @param integer $id Record Id
      * @return array Result
      */
-    public function getArticle($id)
+    public function getKeyword($id)
     {
         if (($id != '') && ctype_digit((string)$id)) {
-            $query = 'SELECT article_id, title, content FROM articles WHERE article_id= :id';
+            $query = 'SELECT keyword_id, `word` FROM keywords WHERE keyword_id= :id';
             $statement = $this->_db->prepare($query);
             $statement->bindValue('id', $id, \PDO::PARAM_INT);
             $statement->execute();
@@ -88,18 +102,36 @@ class ArticlesModel
         }
     }
 
+    /**
+     * Gets single keyword data.
+     *
+     * @access public
+     * @param integer $id Record Id
+     * @return array Result
+     */
+    public function getKeywordArticles($id)
+    {
+        if (($id != '') && ctype_digit((string)$id)) {
+            $query = 'SELECT articles.title,articles.content, articles.keyword_id
+                      FROM articles
+                    WHERE articles.keyword_id = ?';
+            $result = $this->_db->fetchAll($query, array($id));
+            return $result;
+        }
+    }
+
 
     /**
-     * Get all articles on page.
+     * Get all keywords on page.
      *
      * @access public
      * @param integer $page Page number
      * @param integer $limit Number of records on single page
      * @return array Result
      */
-    public function getArticlesPage($page, $limit)
+    public function getKeywordsPage($page, $limit)
     {
-        $query = 'SELECT article_id, title, content, category_id FROM articles';
+        $query = 'SELECT keyword_id, `word` FROM keywords';
         $statement = $this->_db->prepare($query);
         $statement->bindValue('start', ($page-1)*$limit, \PDO::PARAM_INT);
         $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
@@ -109,16 +141,16 @@ class ArticlesModel
     }
 
     /**
-     * Counts article pages.
+     * Counts keyword pages.
      *
      * @access public
      * @param integer $limit Number of records on single page
      * @return integer Result
      */
-    public function countArticlesPages($limit)
+    public function countKeywordsPages($limit)
     {
         $pagesCount = 0;
-        $sql = 'SELECT COUNT(*) as pages_count FROM articles';
+        $sql = 'SELECT COUNT(*) as pages_count FROM keywords';
         $result = $this->_db->fetchAssoc($sql);
         if ($result) {
             $pagesCount =  ceil($result['pages_count']/$limit);
@@ -139,61 +171,44 @@ class ArticlesModel
         return (($page < 1) || ($page > $pagesCount)) ? 1 : $page;
     }
 
-    /* Save article.
+    /* Save keyword.
     *
     * @access public
-    * @param array $article Articles data
+    * @param array $keyword Keywords data
     * @retun mixed Result
     */
-    public function saveArticle($article)
+    public function saveKeyword($keyword)
     {
-        if (isset($article['id'])
-            && ($article['id'] != '')
-            && ctype_digit((string)$article['id'])) {
+        if (isset($keyword['id'])
+            && ($keyword['id'] != '')
+            && ctype_digit((string)$keyword['id'])) {
             // update record
-            $id = $article['id'];
-            unset($article['id']);
-            return $this->_db->update('articles', $article, array('article_id' => $id));
+            $id = $keyword['id'];
+            unset($keyword['id']);
+            return $this->_db->update('keywords', $keyword, array('keyword_id' => $id));
         } else {
             // add new record
-            return $this->_db->insert('articles', $article);
+            return $this->_db->insert('keywords', $keyword);
         }
     }
 
-    public function removeArticle($article)
+    public function removeKeyword($keyword)
     {
-        if (isset($article['id'])
-            && ($article['id'] != '')
-            && ctype_digit((string)$article['id'])) {
+        if (isset($keyword['id'])
+            && ($keyword['id'] != '')
+            && ctype_digit((string)$keyword['id'])) {
             // update record
-            $id = $article['id'];
-            unset($article['id']);
-            return $this->_db->delete('articles', array('article_id' => $id));
-        }
-    }
-    public function checkArticleId($article_id)
-    {
-        $sql = 'SELECT * FROM articles WHERE article_id=?';
-        $result = $this->_db->fetchAll($sql, array($article_id));
-
-        if ($result) {
-            return true;
-        } else {
-            return false;
+            $id = $keyword['id'];
+            unset($keyword['id']);
+            return $this->_db->delete('keywords', array('keyword_id' => $id));
         }
     }
 
-    public function getArticleKeywords($article_id)
+    public function connectKeywordWithArticle($data)
     {
-        $query = 'SELECT DISTINCT keywords.keyword_id, keywords.word FROM article_keywords
-        JOIN keywords
-        ON article_keywords.keyword_id = keywords.keyword_id
-        WHERE article_keywords.article_id = ?';
-        $result = $this->_db->fetchAll($query, array($article_id));
+        $query = 'INSERT INTO `silex-blog`.`article_keywords` (`article_id`, `keyword_id`) VALUES (?, ?)';
+        $result = $this->_db->fetchAll($query, array((int)$data['article_id'], (int)$data['keyword_id']));
         return $result;
 
     }
-
-
-
 }

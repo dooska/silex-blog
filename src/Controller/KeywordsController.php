@@ -1,10 +1,10 @@
 <?php
 /**
- * Article controller
+ * Keyword controller
  *
  * PHP version 5
  *
- * @category Controller
+ * @keyword Controller
  * @package  Controller
  * @author   Dominika Wojna
  * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
@@ -17,15 +17,15 @@ namespace Controller;
 use Silex\Application;
 use Silex\ControllerProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Validator\Constraints as Assert;
+use Model\KeywordsModel;
 use Model\ArticlesModel;
-use Model\CategoriesModel;
-use Model\CommentsModel;
+use Form\ArticleKeywordForm;
 
 /**
- * Class ArticleController
+ * Class KeywordsController
  *
- * @category Controller
+ * @keyword Controller
+ *
  * @package  Controller
  * @author   Dominika Wojna
  * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
@@ -35,21 +35,18 @@ use Model\CommentsModel;
  * @uses Silex\ControllerProviderInterface
  * @uses Symfony\Component\HttpFoundation\Request
  * @uses Symfony\Component\Validator\Constraints
- * @uses Model\ArticleModel
- * @uses Model\CategoriesModel
+ * @uses Model\KeywordModel
  */
-class ArticlesController implements ControllerProviderInterface
+class KeywordsController implements ControllerProviderInterface
 {
     /**
-     * Article Model object.
+     * Keyword Model object.
      *
      * @var $_model
      * @access protected
      */
     protected $_model;
-    protected $_category_model;
-    protected $_comments_model;
-    protected $_keywords_model;
+    protected $_article;
 
     /**
      *
@@ -60,31 +57,32 @@ class ArticlesController implements ControllerProviderInterface
      */
     public function connect(Application $app)
     {
-        $this->_model = new ArticlesModel($app);
-        $this->_category_model = new CategoriesModel($app);
-        $this->_comments_model = new CommentsModel($app);
-        $articlesController = $app['controllers_factory'];
-        $articlesController->post('/add', array($this, 'addAction'));
-        $articlesController->match('/add', array($this, 'addAction'))
-            ->bind('articles_add');
-        $articlesController->match('/add/', array($this, 'addAction'));
-        $articlesController->post('/edit/{id}', array($this, 'editAction'));
-        $articlesController->match('/edit/{id}', array($this, 'editAction'))
-            ->bind('articles_edit');
-        $articlesController->match('/edit/{id}/', array($this, 'editAction'));
-        $articlesController->post('/delete/{id}', array($this, 'deleteAction'));
-        $articlesController->match('/delete/{id}', array($this, 'deleteAction'))
-            ->bind('articles_delete');
-        $articlesController->match('/delete/{id}/', array($this, 'deleteAction'));
-        $articlesController->get('/view/{id}', array($this, 'viewAction'))
-            ->bind('articles_view');
-        $articlesController->get('/view/{id}/', array($this, 'viewAction'));
-        $articlesController->get('/index', array($this, 'indexAction'));
-        $articlesController->get('/index/', array($this, 'indexAction'))
-            ->bind('articles_index');
-//        $articlesController->get('/{page}', array($this, 'indexAction'))
-//            ->value('page', 1)->bind('articles_index');
-        return $articlesController;
+        $this->_model = new KeywordsModel($app);
+        $this->_article = new ArticlesModel($app);
+        $keywordsController = $app['controllers_factory'];
+        $keywordsController->post('/add', array($this, 'addAction'));
+        $keywordsController->match('/add', array($this, 'addAction'))
+            ->bind('keywords_add');
+        $keywordsController->match('/add/', array($this, 'addAction'));
+        $keywordsController->post('/edit/{id}', array($this, 'editAction'));
+        $keywordsController->match('/edit/{id}', array($this, 'editAction'))
+            ->bind('keywords_edit');
+        $keywordsController->match('/edit/{id}/', array($this, 'editAction'));
+        $keywordsController->post('/delete/{id}', array($this, 'deleteAction'));
+        $keywordsController->match('/delete/{id}', array($this, 'deleteAction'))
+            ->bind('keywords_delete');
+        $keywordsController->match('/delete/{id}/', array($this, 'deleteAction'));
+        $keywordsController->get('/view/{id}', array($this, 'viewAction'))
+            ->bind('keywords_view');
+        $keywordsController->get('/view/{id}/', array($this, 'viewAction'));
+        $keywordsController->get('/index', array($this, 'indexAction'));
+        $keywordsController->get('/index/', array($this, 'indexAction'))
+            ->bind('keywords_index');
+        $keywordsController->match('/connect/{id}', array($this, 'connectAction'))
+            ->bind('connect_keyword');
+//        $keywordsController->get('/{page}', array($this, 'indexAction'))
+//            ->value('page', 1)->bind('keywords_index');
+        return $keywordsController;
     }
 
     /**
@@ -98,15 +96,14 @@ class ArticlesController implements ControllerProviderInterface
     public function indexAction(Application $app, Request $request)
     {
         $pageLimit = 3;
-        $page = (int) $request->get('page', 1);
-        $articlesModel = new ArticlesModel($app);
-        $pagesCount = $articlesModel->countArticlesPages($pageLimit);
-        $page = $articlesModel->getCurrentPageNumber($page, $pagesCount);
-        $articles = $articlesModel->getArticlesPage($page, $pageLimit);
+        $page = (int)$request->get('page', 1);
+        $pagesCount = $this->_model->countKeywordsPages($pageLimit);
+        $page = $this->_model->getCurrentPageNumber($page, $pagesCount);
+        $keywords = $this->_model->getKeywordsPage($page, $pageLimit);
         $this->view['paginator']
             = array('page' => $page, 'pagesCount' => $pagesCount);
-        $this->view['articles'] = $articles;
-        return $app['twig']->render('articles/index.twig', $this->view);
+        $this->view['keywords'] = $keywords;
+        return $app['twig']->render('keywords/index.twig', $this->view);
     }
 
     /**
@@ -120,10 +117,10 @@ class ArticlesController implements ControllerProviderInterface
     public function viewAction(Application $app, Request $request)
     {
         $id = (int)$request->get('id', null);
-        $this->view['article'] = $this->_model->getArticle($id);
-        $this->view['comments'] = $this->_comments_model->getCommentsList($id);
-        $this->view['keywords'] = $this->_model->getArticleKeywords($id);
-        return $app['twig']->render('articles/view.twig', $this->view);
+        $keywordsModel = new KeywordsModel($app);
+        $this->view['keyword'] = $keywordsModel->getKeyword($id);
+        $this->view['keyword_articles'] = null;// $keywordsModel->getKeywordArticles($id);
+        return $app['twig']->render('keywords/view.twig', $this->view);
     }
 
 
@@ -138,50 +135,14 @@ class ArticlesController implements ControllerProviderInterface
     public function addAction(Application $app, Request $request)
     {
         // default values:
-        $data = array(
-            'title' => 'Title',
-            'content' => 'Content',
-        );
-        $categoriesArray = array();
 
-        //tworzy tablicę asocjacyjną z tabeli kategorii
-        $categories = $this->_category_model->getAll();
-        foreach ($categories as $category) {
-            $categoriesArray[$category['category_id']] = $category['category_name'];
-        }
-
-
-        $form = $app['form.factory']->createBuilder('form', $data)
+        $form = $app['form.factory']->createBuilder('form')
             ->add(
-                'title', 'text',
+                'word', 'text',
                 array(
                     'constraints' => array(
                         new Assert\NotBlank(),
-                        new Assert\Length(array('min' => 5))
-                    ),
-                    'attr' => array(
-                        'class' => 'form-control'
-                    )
-                )
-            )
-            ->add(
-                'content', 'textarea',
-                array(
-                    'constraints' => array(
-                        new Assert\NotBlank(),
-                        new Assert\Length(array('min' => 5))
-                    ),
-                    'attr' => array(
-                        'class' => 'form-control'
-                    )
-                )
-            )
-            ->add(
-                'category_id', 'choice',
-                array(
-                    'choices' => $categoriesArray,
-                    'constraints' => array(
-                        new Assert\NotBlank(),
+                        new Assert\Length(array('min' => 3))
                     ),
                     'attr' => array(
                         'class' => 'form-control'
@@ -193,22 +154,22 @@ class ArticlesController implements ControllerProviderInterface
 
         if ($form->isValid()) {
             $data = $form->getData();
-            $articlesModel = new ArticlesModel($app);
-            $articlesModel->saveArticle($data);
+            $keywordsModel = new KeywordsModel($app);
+            $keywordsModel->saveKeyword($data);
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nowy wpis.')
+                    'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nową kategorię.')
                 )
             );
             return $app->redirect(
-                $app['url_generator']->generate('articles_index'),
+                $app['url_generator']->generate('keywords_index'),
                 301
             );
         }
 
         $this->view['form'] = $form->createView();
 
-        return $app['twig']->render('articles/add.twig', $this->view);
+        return $app['twig']->render('keywords/add.twig', $this->view);
     }
 
     /**
@@ -222,13 +183,13 @@ class ArticlesController implements ControllerProviderInterface
     public function editAction(Application $app, Request $request)
     {
 
-        $articlesModel = new ArticlesModel($app);
-        $id = (int) $request->get('id', 0);
-        $article = $articlesModel->getArticle($id);
+        $keywordsModel = new KeywordsModel($app);
+        $id = (int)$request->get('id', 0);
+        $keyword = $keywordsModel->getKeyword($id);
 
-        if (count($article)) {
+        if (count($keyword)) {
 
-            $form = $app['form.factory']->createBuilder('form', $article)
+            $form = $app['form.factory']->createBuilder('form', $keyword)
                 ->add(
                     'id', 'hidden',
                     array(
@@ -240,20 +201,11 @@ class ArticlesController implements ControllerProviderInterface
                     )
                 )
                 ->add(
-                    'title', 'text',
+                    'word', 'text',
                     array(
                         'constraints' => array(
                             new Assert\NotBlank(),
-                            new Assert\Length(array('min' => 5))
-                        )
-                    )
-                )
-                ->add(
-                    'content', 'text',
-                    array(
-                        'constraints' => array(
-                            new Assert\NotBlank(),
-                            new Assert\Length(array('min' => 5))
+                            new Assert\Length(array('min' => 3))
                         )
                     )
                 )
@@ -262,15 +214,15 @@ class ArticlesController implements ControllerProviderInterface
 
             if ($form->isValid()) {
                 $data = $form->getData();
-                $articlesModel = new ArticlesModel($app);
-                $articlesModel->saveArticle($data);
+                $keywordsModel = new KeywordsModel($app);
+                $keywordsModel->saveKeyword($data);
                 $app['session']->getFlashBag()->add(
                     'message', array(
                         'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś wpis.')
                     )
                 );
                 return $app->redirect(
-                    $app['url_generator']->generate('articles_index'),
+                    $app['url_generator']->generate('keywords_index'),
                     301
                 );
             }
@@ -285,21 +237,21 @@ class ArticlesController implements ControllerProviderInterface
                 )
             );
             return $app->redirect(
-                $app['url_generator']->generate('articles_index'),
+                $app['url_generator']->generate('keywords_index'),
                 301
             );
         }
 
-        return $app['twig']->render('articles/edit.twig', $this->view);
+        return $app['twig']->render('keywords/edit.twig', $this->view);
     }
 
     public function deleteAction(Application $app, Request $request)
     {
-        $articlesModel = new ArticlesModel($app);
-        $id = (int) $request->get('id', 0);
-        $article = $articlesModel->getArticle($id);
+        $keywordsModel = new KeywordsModel($app);
+        $id = (int)$request->get('id', 0);
+        $keyword = $keywordsModel->getKeyword($id);
 
-        if (count($article)) {
+        if (count($keyword)) {
             $data = array();
             $form = $app['form.factory']->createBuilder('form', $data)
                 ->add(
@@ -318,7 +270,7 @@ class ArticlesController implements ControllerProviderInterface
                     $data = $form->getData();
 
                     try {
-                        $this->_model->removeArticle($data);
+                        $this->_model->removeKeyword($data);
 
                         $app['session']->getFlashBag()->add(
                             'message', array(
@@ -329,7 +281,7 @@ class ArticlesController implements ControllerProviderInterface
                         );
                         return $app->redirect(
                             $app['url_generator']->generate(
-                                'articles_index'
+                                'keywords_index'
                             ), 301
                         );
                     } catch (\Exception $e) {
@@ -338,7 +290,7 @@ class ArticlesController implements ControllerProviderInterface
                 } else {
                     return $app->redirect(
                         $app['url_generator']->generate(
-                            'articles_index'
+                            'keywords_index'
                         ), 301
                     );
                 }
@@ -356,12 +308,79 @@ class ArticlesController implements ControllerProviderInterface
             );
             return $app->redirect(
                 $app['url_generator']->generate(
-                    'articles_index'
+                    'keywords_index'
                 ), 301
             );
         }
-        return $app['twig']->render('articles/delete.twig', $this->view);
+        return $app['twig']->render('keywords/delete.twig', $this->view);
     }
 
+    public function connectAction(Application $app, Request $request)
+    {
+        $article_id = (int)$request->get('id', 0);
+        $checkArticle = $this->_article->checkArticleId($article_id);
 
+        if ($checkArticle) {
+            $keywords = $this->_model->getKeywordsArray();
+            $form = $app['form.factory']->createBuilder(
+                new ArticleKeywordForm(), array(
+                'keywords' => $keywords,
+                'article_id' => $article_id))->getForm();
+
+            $form->handleRequest($request);
+
+            if ($form->isValid()) {
+                $data = $form->getData();
+                try {
+                    $this->_model->connectKeywordWithArticle($data);
+
+                    $app['session']->getFlashBag()->add(
+                        'message', array(
+                            'type' => 'success',
+                            'content' => 'Słowo kluczowe zostało dodane'
+                        )
+                    );
+                    return $app->redirect(
+                        $app['url_generator']->generate(
+                            'articles_index'
+                        ), 301
+                    );
+                } catch (\Exception $e) {
+                    $errors[] = 'Coś poszło niezgodnie z planem';
+                }
+            }
+            return $app['twig']->render('keywords/connect.twig', array(
+                    'form' => $form->createView()
+                )
+            );
+
+        }  else {
+            $app['session']->getFlashBag()->add(
+                'message', array(
+                    'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
+                )
+            );
+            return $app->redirect(
+                $app['url_generator']->generate('articles_index'),
+                301
+            );
+        }
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

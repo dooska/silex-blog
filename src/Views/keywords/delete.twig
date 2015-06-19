@@ -1,0 +1,12 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{  'Usuń słowo kluczowe'|trans }}{% endblock %}
+
+{% block content %}
+    <h1>
+        {{ 'Usuń słowo kluczowe'|trans }}
+    </h1>
+    <form action="" method="post">
+        {{ form_widget(form) }}
+    </form>
+{% endblock %}

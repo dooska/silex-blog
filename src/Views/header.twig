@@ -17,6 +17,7 @@
                 <ul class="nav navbar-nav">
                     <li class=""><a href="{{ url('articles_index') }}">Artykuły <span class="sr-only">(current)</span></a></li>
                     <li class=""><a href="{{ url('categories_index') }}">Kategorie <span class="sr-only">(current)</span></a></li>
+                    <li class=""><a href="{{ url('keywords_index') }}">Słowa kluczowe <span class="sr-only">(current)</span></a></li>
                     {% if is_granted('IS_AUTHENTICATED_FULLY') %}
                     <li>
                         <a href="{{ url('auth_logout') }}" title="{{ 'Logout'|trans }}">{{ 'Logout'|trans }}</a>
