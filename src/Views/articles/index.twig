@@ -34,7 +34,6 @@
             <tr>
                 <th>{{ 'Id'|trans }}</th>
                 <th>{{ 'Tytuł'|trans }}</th>
-                <th>{{ 'Zawartość'|trans }}</th>
                 <th>{{ 'Id kategorii'|trans }}</th>
                 <th colspan="3">&nbsp;</th>
             </tr>
@@ -44,7 +43,6 @@
                 <tr>
                     <td>{{ article.article_id|e }}</td>
                     <td>{{ article.title|e }}</td>
-                    <td>{{ article.content|e }}</td>
                     <td>{{ article.category_id|e }}</td>
                     <td>
                         <a href="{{ url('articles_view', {'id': article.article_id}) }}"class="btn btn-primary btn-sm" title="{{ 'View article'|trans }}">{{ 'Zobacz artykuł'|trans }}</a>

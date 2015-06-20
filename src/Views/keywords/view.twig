@@ -19,14 +19,14 @@
             {% if keyword_articles %}
                 <table class="table">
                     <thead>
+                    <th>Id</th>
                     <th>Tytuł posta</th>
-                    <th>Treść posta</th>
                     <th>Akcja</th>
                     </thead>
                 {% for article in keyword_articles %}
                     <tr>
+                        <td>{{ article.id }}</td>
                         <td>{{ article.title }}</td>
-                        <td>{{ article.content }}</td>
                         <td><a href="{{ url('articles_view',
                             {'id': article.article_id}) }}"
                                class="btn btn-primary">Pokaż
