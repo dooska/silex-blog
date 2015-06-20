@@ -150,141 +150,39 @@ class CommentsController implements ControllerProviderInterface
 
     public function addAction(Application $app, Request $request)
     {
-        $article_id = (int)$request->get('article_id');
+        if ($app['security']->isGranted('ROLE_USER')) {
 
-        $check = $this->_articles->checkArticleId($article_id);
-//        var_dump($check);
-//        var_dump($article_id);
-//        die();
 
-        if ($check) {
+            $article_id = (int)$request->get('article_id');
 
-            if ($this->_user->_isLoggedIn($app)) {
-                $user_id = $this->_user->getIdCurrentUser($app);
-            } else {
-                $user_id = 0;
-            }
-            $data = array(
-                'published_date' => date('Y-m-d'),
-                'article_id' => $article_id,
-                'user_id' => $user_id,
-            );
-            $form = $app['form.factory']->createBuilder(new CommentForm(), $data)
-                ->getForm();
+            $check = $this->_articles->checkArticleId($article_id);
 
-            $form->handleRequest($request);
+            if ($check) {
 
-            if ($form->isValid()) {
-                $data = $form->getData();
-                try {
-                    $model = $this->_model->addComment($data);
-
-                    $app['session']->getFlashBag()->add(
-                        'message', array(
-                            'type' => 'success',
-                            'content' => 'Komentarz został dodany'
-                        )
-                    );
-                    return $app->redirect(
-                        $app['url_generator']->generate(
-                            'articles_index'
-                        ), 301
-                    );
-                } catch (\Exception $e) {
-                    $errors[] = 'Coś poszło niezgodnie z planem';
+                if ($this->_user->_isLoggedIn($app)) {
+                    $user_id = $this->_user->getIdCurrentUser($app);
+                } else {
+                    $user_id = 0;
                 }
-            }
-            return $app['twig']->render(
-                'comments/add.twig', array(
-                    'form' => $form->createView(),
-                    'article_id' => $article_id
-                )
-            );
-        } else {
-            $app['session']->getFlashBag()->add(
-                'message', array(
-                    'type' => 'danger',
-                    'content' => 'Nie znaleziono komentarza'
-                )
-            );
-            return $app->redirect(
-                $app['url_generator']->generate(
-                    'articles_index'
-                ), 301
-            );
-        }
-    }
-
-    /**
-     * Edit comment
-     *
-     * @param Application $app     application object
-     * @param Request     $request request
-     *
-     * @access public
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse Redirect.
-     * @return mixed Generates page.
-     */
-    public function editAction(Application $app, Request $request)
-    {
-
-        $id = (int)$request->get('id', 0);
-
-        $check = $this->_model->checkCommentId($id);
-
-        if ($check) {
-
-//            $idCurrentUser = $this->_user->getIdCurrentUser($app);
-            $comment = $this->_model->getComment($id);
-
-            if (count($comment)) {
-
                 $data = array(
-                    'comment_id' => $id,
-                    'comment_content' => $comment['content'],
-                    'published_date' => date('Y-m-d'),
-                    'article_id' => $comment['article_id'],
-                    'user_id' => $comment['iduser'],
-//                    'current_user' => $idCurrentUser,
+                    'published_date' => date('Y-m-d H:m'),
+                    'article_id' => $article_id,
+                    'user_id' => (int)$user_id,
                 );
-
-                $form = $app['form.factory']->createBuilder('form', $data)
-                    ->add(
-                        'content', 'textarea', array(
-                        'required' => false
-                    ), array(
-                            'constraints' => array(
-                                new Assert\NotBlank(),
-                                new Assert\Length(
-                                    array(
-                                        'min' => 5,
-                                        'minMessage' =>
-                                            'Minimalna ilość znaków to 5',
-                                    )
-                                ),
-                                new Assert\Type(
-                                    array(
-                                        'type' => 'string',
-                                        'message' => 'Tekst nie poprawny.',
-                                    )
-                                )
-                            )
-                        )
-                    )
+                $form = $app['form.factory']->createBuilder(new CommentForm(), $data)
                     ->getForm();
 
                 $form->handleRequest($request);
 
                 if ($form->isValid()) {
                     $data = $form->getData();
-
                     try {
-                        $model = $this->_model->editComment($data);
+                        $model = $this->_model->addComment($data);
 
                         $app['session']->getFlashBag()->add(
                             'message', array(
                                 'type' => 'success',
-                                'content' => 'Komanetarz został zmieniony'
+                                'content' => 'Komentarz został dodany'
                             )
                         );
                         return $app->redirect(
@@ -292,110 +190,14 @@ class CommentsController implements ControllerProviderInterface
                                 'articles_view', array('id' => $data['article_id'])
                             ), 301
                         );
-                    } catch (Exception $e) {
+                    } catch (\Exception $e) {
                         $errors[] = 'Coś poszło niezgodnie z planem';
                     }
                 }
                 return $app['twig']->render(
-                    'comments/edit.twig', array(
-                        'form' => $form->createView()
-                    )
-                );
-            } else {
-                $app['session']->getFlashBag()->add(
-                    'message', array(
-                        'type' => 'danger',
-                        'content' => 'Nie znaleziono komentarza'
-                    )
-                );
-                return $app->redirect(
-                    $app['url_generator']->generate(
-                        '/comments/add'
-                    ), 301
-                );
-            }
-        } else {
-            $app['session']->getFlashBag()->add(
-                'message', array(
-                    'type' => 'danger',
-                    'content' => 'Nie znaleziono komentarza'
-                )
-            );
-            return $app->redirect(
-                $app['url_generator']->generate(
-                    'articles_index'
-                ), 301
-            );
-
-        }
-    }
-
-    /**
-     * Delete comment
-     *
-     * @param Application $app     application object
-     * @param Request     $request request
-     *
-     * @access public
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse Redirect.
-     * @return mixed Generates page.
-     */
-    public function deleteAction(Application $app, Request $request)
-    {
-        $id = (int)$request->get('id', 0);
-
-        $check = $this->_model->checkCommentId($id);
-
-        if ($check) {
-
-            $comment = $this->_model->getComment($id);
-
-            $data = array();
-
-            if (count($comment)) {
-                $form = $app['form.factory']->createBuilder('form', $data)
-                    ->add(
-                        'comment_id', 'hidden', array(
-                            'data' => $id,
-                        )
-                    )
-                    ->add('Yes', 'submit')
-                    ->add('No', 'submit')
-                    ->getForm();
-
-                $form->handleRequest($request);
-
-                if ($form->isValid()) {
-                    if ($form->get('Yes')->isClicked()) {
-                        $data = $form->getData();
-                        try {
-                            $model = $this->_model->deleteComment($data);
-
-                            $app['session']->getFlashBag()->add(
-                                'message', array(
-                                    'type' => 'success',
-                                    'content' => 'Komantarz został usunięty'
-                                )
-                            );
-                            return $app->redirect(
-                                $app['url_generator']->generate(
-                                    'articles_index'
-                                ), 301
-                            );
-                        } catch (\Exception $e) {
-                            $errors[] = 'Coś poszło niezgodnie z planem';
-                        }
-                    } else {
-                        return $app->redirect(
-                            $app['url_generator']->generate(
-                                'articles_index'
-                            ), 301
-                        );
-                    }
-                }
-                return $app['twig']->render(
-                    'comments/delete.twig', array(
-                        'form' => $form->createView()
+                    'comments/add.twig', array(
+                        'form' => $form->createView(),
+                        'article_id' => $article_id
                     )
                 );
             } else {
@@ -415,16 +217,222 @@ class CommentsController implements ControllerProviderInterface
             $app['session']->getFlashBag()->add(
                 'message', array(
                     'type' => 'danger',
-                    'content' => 'Nie znaleziono komentarza'
+                    'content' => $app['translator']->trans('Zaloguj się, aby dodać komentarz!')
                 )
             );
             return $app->redirect(
-                $app['url_generator']->generate(
-                    'articles_index'
-                ), 301
+                $app['url_generator']->generate('articles_index'),
+                301
             );
-
         }
     }
+
+    /**
+     * Edit comment
+     *
+     * @param Application $app     application object
+     * @param Request     $request request
+     *
+     * @access public
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse Redirect.
+     * @return mixed Generates page.
+     */
+    public function editAction(Application $app, Request $request)
+    {
+        if ($app['security']->isGranted('ROLE_USER')) {
+
+
+            $id = (int)$request->get('id', 0);
+
+            $check = $this->_model->checkCommentId($id);
+
+            if ($check) {
+
+                $comment = $this->_model->getComment($id);
+                $comment['published_date'] = date('Y-m-d H:m:s');
+
+                if (count($comment)) {
+
+                    $form = $app['form.factory']->createBuilder(new CommentForm(), $comment)
+                        ->getForm();
+
+                    $form->handleRequest($request);
+
+                    if ($form->isValid()) {
+                        $data = $form->getData();
+
+                        try {
+                            $model = $this->_model->editComment($data);
+
+                            $app['session']->getFlashBag()->add(
+                                'message', array(
+                                    'type' => 'success',
+                                    'content' => 'Komentarz został zmieniony'
+                                )
+                            );
+                            return $app->redirect(
+                                $app['url_generator']->generate(
+                                    'articles_view', array('id' => $comment['article_id'])
+                                ), 301
+                            );
+                        } catch (Exception $e) {
+                            $errors[] = 'Coś poszło niezgodnie z planem';
+                        }
+                    }
+                    return $app['twig']->render(
+                        'comments/edit.twig', array(
+                            'form' => $form->createView()
+                        )
+                    );
+                } else {
+                    $app['session']->getFlashBag()->add(
+                        'message', array(
+                            'type' => 'danger',
+                            'content' => 'Nie znaleziono komentarza'
+                        )
+                    );
+                    return $app->redirect(
+                        $app['url_generator']->generate(
+                            '/comments/add'
+                        ), 301
+                    );
+                }
+            } else {
+                $app['session']->getFlashBag()->add(
+                    'message', array(
+                        'type' => 'danger',
+                        'content' => 'Nie znaleziono komentarza'
+                    )
+                );
+                return $app->redirect(
+                    $app['url_generator']->generate(
+                        'articles_index'
+                    ), 301
+                );
+
+            }
+        } else {
+            $app['session']->getFlashBag()->add(
+                'message', array(
+                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                )
+            );
+            return $app->redirect(
+                $app['url_generator']->generate('articles_index'),
+                301
+            );
+        }
+    }
+
+    /**
+     * Delete comment
+     *
+     * @param Application $app     application object
+     * @param Request     $request request
+     *
+     * @access public
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse Redirect.
+     * @return mixed Generates page.
+     */
+    public function deleteAction(Application $app, Request $request)
+    {
+        if ($app['security']->isGranted('ROLE_USER')) {
+
+            $id = (int)$request->get('id', 0);
+
+            $check = $this->_model->checkCommentId($id);
+
+            if ($check) {
+
+                $comment = $this->_model->getComment($id);
+
+                $data = array();
+
+                if (count($comment)) {
+                    $form = $app['form.factory']->createBuilder('form', $data)
+                        ->add(
+                            'comment_id', 'hidden', array(
+                                'data' => $id,
+                            )
+                        )
+                        ->add('Yes', 'submit')
+                        ->add('No', 'submit')
+                        ->getForm();
+
+                    $form->handleRequest($request);
+
+                    if ($form->isValid()) {
+                        if ($form->get('Yes')->isClicked()) {
+                            $data = $form->getData();
+                            try {
+                                $model = $this->_model->deleteComment($data);
+
+                                $app['session']->getFlashBag()->add(
+                                    'message', array(
+                                        'type' => 'success',
+                                        'content' => 'Komantarz został usunięty'
+                                    )
+                                );
+                                return $app->redirect(
+                                    $app['url_generator']->generate(
+                                        'articles_index'
+                                    ), 301
+                                );
+                            } catch (\Exception $e) {
+                                $errors[] = 'Coś poszło niezgodnie z planem';
+                            }
+                        } else {
+                            return $app->redirect(
+                                $app['url_generator']->generate(
+                                    'articles_index'
+                                ), 301
+                            );
+                        }
+                    }
+                    return $app['twig']->render(
+                        'comments/delete.twig', array(
+                            'form' => $form->createView()
+                        )
+                    );
+                } else {
+                    $app['session']->getFlashBag()->add(
+                        'message', array(
+                            'type' => 'danger',
+                            'content' => 'Nie znaleziono komentarza'
+                        )
+                    );
+                    return $app->redirect(
+                        $app['url_generator']->generate(
+                            'articles_index'
+                        ), 301
+                    );
+                }
+            } else {
+                $app['session']->getFlashBag()->add(
+                    'message', array(
+                        'type' => 'danger',
+                        'content' => 'Nie znaleziono komentarza'
+                    )
+                );
+                return $app->redirect(
+                    $app['url_generator']->generate(
+                        'articles_index'
+                    ), 301
+                );
+
+            }
+        }
+        else {
+            $app['session']->getFlashBag()->add(
+                'message', array(
+                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                )
+            );
+            return $app->redirect(
+                $app['url_generator']->generate('articles_index'),
+                301
+            );
+        }}
+
 
 }

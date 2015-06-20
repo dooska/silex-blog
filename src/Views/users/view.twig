@@ -1,0 +1,26 @@
+
+{% extends 'layout.twig' %}
+
+{% block title %}
+    Info
+{% endblock %}
+
+{% block content %}
+
+            <table class = "table">
+            <thead>
+            <tr>
+                <th>Login</th>
+                <th>Email</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>{{ userinfo.login }}</td>
+                <td>{{ userinfo.email }}</td>
+                <td><a class = "btn btn-default" href="{{ url('users_edit') }}" role = "button" >Edytuj</a></td>
+            </tr>
+            </tbody>
+        </table>
+
+{% endblock %}

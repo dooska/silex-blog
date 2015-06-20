@@ -21,6 +21,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Model\ArticlesModel;
 use Model\CategoriesModel;
 use Model\CommentsModel;
+use Model\UsersModel;
 
 /**
  * Class ArticleController
@@ -50,6 +51,7 @@ class ArticlesController implements ControllerProviderInterface
     protected $_category_model;
     protected $_comments_model;
     protected $_keywords_model;
+    protected $_users_model;
 
     /**
      *
@@ -63,6 +65,7 @@ class ArticlesController implements ControllerProviderInterface
         $this->_model = new ArticlesModel($app);
         $this->_category_model = new CategoriesModel($app);
         $this->_comments_model = new CommentsModel($app);
+        $this->_users_model = new UsersModel($app);
         $articlesController = $app['controllers_factory'];
         $articlesController->post('/add', array($this, 'addAction'));
         $articlesController->match('/add', array($this, 'addAction'))
@@ -123,6 +126,10 @@ class ArticlesController implements ControllerProviderInterface
         $this->view['article'] = $this->_model->getArticle($id);
         $this->view['comments'] = $this->_comments_model->getCommentsList($id);
         $this->view['keywords'] = $this->_model->getArticleKeywords($id);
+        $checkUser = $this->_users_model->_isLoggedIn($app);
+        if($checkUser) {
+            $this->view['user'] = $this->_users_model->getCurrentUserInfo($app);
+        }
         return $app['twig']->render('articles/view.twig', $this->view);
     }
 
@@ -137,123 +144,55 @@ class ArticlesController implements ControllerProviderInterface
      */
     public function addAction(Application $app, Request $request)
     {
-        // default values:
-        $data = array(
-            'title' => 'Title',
-            'content' => 'Content',
-        );
-        $categoriesArray = array();
-
-        //tworzy tablicę asocjacyjną z tabeli kategorii
-        $categories = $this->_category_model->getAll();
-        foreach ($categories as $category) {
-            $categoriesArray[$category['category_id']] = $category['category_name'];
-        }
-
-
-        $form = $app['form.factory']->createBuilder('form', $data)
-            ->add(
-                'title', 'text',
-                array(
-                    'constraints' => array(
-                        new Assert\NotBlank(),
-                        new Assert\Length(array('min' => 5))
-                    ),
-                    'attr' => array(
-                        'class' => 'form-control'
-                    )
-                )
-            )
-            ->add(
-                'content', 'textarea',
-                array(
-                    'constraints' => array(
-                        new Assert\NotBlank(),
-                        new Assert\Length(array('min' => 5))
-                    ),
-                    'attr' => array(
-                        'class' => 'form-control'
-                    )
-                )
-            )
-            ->add(
-                'category_id', 'choice',
-                array(
-                    'choices' => $categoriesArray,
-                    'constraints' => array(
-                        new Assert\NotBlank(),
-                    ),
-                    'attr' => array(
-                        'class' => 'form-control'
-                    )
-                )
-            )
-            ->getForm();
-        $form->handleRequest($request);
-
-        if ($form->isValid()) {
-            $data = $form->getData();
-            $articlesModel = new ArticlesModel($app);
-            $articlesModel->saveArticle($data);
-            $app['session']->getFlashBag()->add(
-                'message', array(
-                    'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nowy wpis.')
-                )
+        if ($app['security']->isGranted('ROLE_ADMIN')) {
+            // default values:
+            $data = array(
+                'title' => 'Title',
+                'content' => 'Content',
             );
-            return $app->redirect(
-                $app['url_generator']->generate('articles_index'),
-                301
-            );
-        }
+            $categoriesArray = array();
 
-        $this->view['form'] = $form->createView();
+            //tworzy tablicę asocjacyjną z tabeli kategorii
+            $categories = $this->_category_model->getAll();
+            foreach ($categories as $category) {
+                $categoriesArray[$category['category_id']] = $category['category_name'];
+            }
 
-        return $app['twig']->render('articles/add.twig', $this->view);
-    }
 
-    /**
-     * Edit action.
-     *
-     * @access public
-     * @param Silex\Application $app Silex application
-     * @param Symfony\Component\HttpFoundation\Request $request Request object
-     * @return string Output
-     */
-    public function editAction(Application $app, Request $request)
-    {
-
-        $articlesModel = new ArticlesModel($app);
-        $id = (int) $request->get('id', 0);
-        $article = $articlesModel->getArticle($id);
-
-        if (count($article)) {
-
-            $form = $app['form.factory']->createBuilder('form', $article)
-                ->add(
-                    'id', 'hidden',
-                    array(
-                        'data' => $id,
-                        'constraints' => array(
-                            new Assert\NotBlank(),
-                            new Assert\Type(array('type' => 'digit'))
-                        )
-                    )
-                )
+            $form = $app['form.factory']->createBuilder('form', $data)
                 ->add(
                     'title', 'text',
                     array(
                         'constraints' => array(
                             new Assert\NotBlank(),
                             new Assert\Length(array('min' => 5))
+                        ),
+                        'attr' => array(
+                            'class' => 'form-control'
                         )
                     )
                 )
                 ->add(
-                    'content', 'text',
+                    'content', 'textarea',
                     array(
                         'constraints' => array(
                             new Assert\NotBlank(),
                             new Assert\Length(array('min' => 5))
+                        ),
+                        'attr' => array(
+                            'class' => 'form-control'
+                        )
+                    )
+                )
+                ->add(
+                    'category_id', 'choice',
+                    array(
+                        'choices' => $categoriesArray,
+                        'constraints' => array(
+                            new Assert\NotBlank(),
+                        ),
+                        'attr' => array(
+                            'class' => 'form-control'
                         )
                     )
                 )
@@ -266,7 +205,7 @@ class ArticlesController implements ControllerProviderInterface
                 $articlesModel->saveArticle($data);
                 $app['session']->getFlashBag()->add(
                     'message', array(
-                        'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś wpis.')
+                        'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nowy wpis.')
                     )
                 );
                 return $app->redirect(
@@ -275,13 +214,14 @@ class ArticlesController implements ControllerProviderInterface
                 );
             }
 
-            $this->view['id'] = $id;
             $this->view['form'] = $form->createView();
 
+
+            return $app['twig']->render('articles/add.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
+                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
                 )
             );
             return $app->redirect(
@@ -289,78 +229,183 @@ class ArticlesController implements ControllerProviderInterface
                 301
             );
         }
+    }
 
-        return $app['twig']->render('articles/edit.twig', $this->view);
+    /**
+     * Edit action.
+     *
+     * @access public
+     * @param Silex\Application $app Silex application
+     * @param Symfony\Component\HttpFoundation\Request $request Request object
+     * @return string Output
+     */
+    public function editAction(Application $app, Request $request)
+    {
+        if ($app['security']->isGranted('ROLE_ADMIN')) {
+
+            $articlesModel = new ArticlesModel($app);
+            $id = (int) $request->get('id', 0);
+            $article = $articlesModel->getArticle($id);
+
+            if (count($article)) {
+
+                $form = $app['form.factory']->createBuilder('form', $article)
+                    ->add(
+                        'id', 'hidden',
+                        array(
+                            'data' => $id,
+                            'constraints' => array(
+                                new Assert\NotBlank(),
+                                new Assert\Type(array('type' => 'digit'))
+                            )
+                        )
+                    )
+                    ->add(
+                        'title', 'text',
+                        array(
+                            'constraints' => array(
+                                new Assert\NotBlank(),
+                                new Assert\Length(array('min' => 5))
+                            )
+                        )
+                    )
+                    ->add(
+                        'content', 'text',
+                        array(
+                            'constraints' => array(
+                                new Assert\NotBlank(),
+                                new Assert\Length(array('min' => 5))
+                            )
+                        )
+                    )
+                    ->getForm();
+                $form->handleRequest($request);
+
+                if ($form->isValid()) {
+                    $data = $form->getData();
+                    $articlesModel = new ArticlesModel($app);
+                    $articlesModel->saveArticle($data);
+                    $app['session']->getFlashBag()->add(
+                        'message', array(
+                            'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś wpis.')
+                        )
+                    );
+                    return $app->redirect(
+                        $app['url_generator']->generate('articles_index'),
+                        301
+                    );
+                }
+
+                $this->view['id'] = $id;
+                $this->view['form'] = $form->createView();
+
+            } else {
+                $app['session']->getFlashBag()->add(
+                    'message', array(
+                        'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
+                    )
+                );
+                return $app->redirect(
+                    $app['url_generator']->generate('articles_index'),
+                    301
+                );
+            }
+
+            return $app['twig']->render('articles/edit.twig', $this->view);
+        } else {
+            $app['session']->getFlashBag()->add(
+                'message', array(
+                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                )
+            );
+            return $app->redirect(
+                $app['url_generator']->generate('articles_index'),
+                301
+            );
+        }
     }
 
     public function deleteAction(Application $app, Request $request)
     {
-        $articlesModel = new ArticlesModel($app);
-        $id = (int) $request->get('id', 0);
-        $article = $articlesModel->getArticle($id);
+        if ($app['security']->isGranted('ROLE_ADMIN')) {
 
-        if (count($article)) {
-            $data = array();
-            $form = $app['form.factory']->createBuilder('form', $data)
-                ->add(
-                    'id', 'hidden', array(
-                        'data' => $id,
+            $articlesModel = new ArticlesModel($app);
+            $id = (int) $request->get('id', 0);
+            $article = $articlesModel->getArticle($id);
+
+            if (count($article)) {
+                $data = array();
+                $form = $app['form.factory']->createBuilder('form', $data)
+                    ->add(
+                        'id', 'hidden', array(
+                            'data' => $id,
+                        )
                     )
-                )
-                ->add('Tak', 'submit')
-                ->add('Nie', 'submit')
-                ->getForm();
+                    ->add('Tak', 'submit')
+                    ->add('Nie', 'submit')
+                    ->getForm();
 
-            $form->handleRequest($request);
+                $form->handleRequest($request);
 
-            if ($form->isValid()) {
-                if ($form->get('Tak')->isClicked()) {
-                    $data = $form->getData();
+                if ($form->isValid()) {
+                    if ($form->get('Tak')->isClicked()) {
+                        $data = $form->getData();
 
-                    try {
-                        $this->_model->removeArticle($data);
+                        try {
+                            $this->_model->removeArticle($data);
 
-                        $app['session']->getFlashBag()->add(
-                            'message', array(
-                                'type' => 'success',
-                                'content' =>
-                                    'Artykuł został usunięty'
-                            )
-                        );
+                            $app['session']->getFlashBag()->add(
+                                'message', array(
+                                    'type' => 'success',
+                                    'content' =>
+                                        'Artykuł został usunięty'
+                                )
+                            );
+                            return $app->redirect(
+                                $app['url_generator']->generate(
+                                    'articles_index'
+                                ), 301
+                            );
+                        } catch (\Exception $e) {
+                            $errors[] = 'Coś poszło niezgodnie z planem';
+                        }
+                    } else {
                         return $app->redirect(
                             $app['url_generator']->generate(
                                 'articles_index'
                             ), 301
                         );
-                    } catch (\Exception $e) {
-                        $errors[] = 'Coś poszło niezgodnie z planem';
                     }
-                } else {
-                    return $app->redirect(
-                        $app['url_generator']->generate(
-                            'articles_index'
-                        ), 301
-                    );
                 }
+
+                $this->view['id'] = $id;
+                $this->view['form'] = $form->createView();
+
+            } else {
+                $app['session']->getFlashBag()->add(
+                    'message', array(
+                        'type' => 'danger',
+                        'content' => 'Nie znaleziono postu'
+                    )
+                );
+                return $app->redirect(
+                    $app['url_generator']->generate(
+                        'articles_index'
+                    ), 301
+                );
             }
-
-            $this->view['id'] = $id;
-            $this->view['form'] = $form->createView();
-
+            return $app['twig']->render('articles/delete.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger',
-                    'content' => 'Nie znaleziono postu'
+                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
                 )
             );
             return $app->redirect(
-                $app['url_generator']->generate(
-                    'articles_index'
-                ), 301
+                $app['url_generator']->generate('articles_index'),
+                301
             );
         }
-        return $app['twig']->render('articles/delete.twig', $this->view);
     }
 
 

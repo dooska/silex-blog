@@ -134,49 +134,62 @@ class KeywordsController implements ControllerProviderInterface
      */
     public function addAction(Application $app, Request $request)
     {
-        // default values:
+        if ($app['security']->isGranted('ROLE_ADMIN')) {
 
-        $form = $app['form.factory']->createBuilder(
-            new KeywordAddForm(), array())
-            ->getForm();
+            // default values:
 
-        $form->handleRequest($request);
+            $form = $app['form.factory']->createBuilder(
+                new KeywordAddForm(), array())
+                ->getForm();
 
-        if ($form->isValid()) {
-            $data = $form->getData();
-            try {
-                $check = $this->_model->checkIfKeywordExists($data);
-                if(!$check) {
-                    $this->_model->saveKeyword($data);
-                    $app['session']->getFlashBag()->add(
-                        'message', array(
-                            'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nowe słowo kluczowe.')
-                        )
-                    );
-                    return $app->redirect(
-                        $app['url_generator']->generate('keywords_index'),
-                        301
-                    );
-                } else {
-                    $app['session']->getFlashBag()->add(
-                        'message', array(
-                            'type' => 'danger',
-                            'content' => $app['translator']->trans('Słowo kluczowe istnieje.')
-                        )
-                    );
-                    return $app->redirect(
-                        $app['url_generator']->generate('keywords_index'),
-                        301
-                    );
+            $form->handleRequest($request);
+
+            if ($form->isValid()) {
+                $data = $form->getData();
+                try {
+                    $check = $this->_model->checkIfKeywordExists($data);
+                    if(!$check) {
+                        $this->_model->saveKeyword($data);
+                        $app['session']->getFlashBag()->add(
+                            'message', array(
+                                'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nowe słowo kluczowe.')
+                            )
+                        );
+                        return $app->redirect(
+                            $app['url_generator']->generate('keywords_index'),
+                            301
+                        );
+                    } else {
+                        $app['session']->getFlashBag()->add(
+                            'message', array(
+                                'type' => 'danger',
+                                'content' => $app['translator']->trans('Słowo kluczowe istnieje.')
+                            )
+                        );
+                        return $app->redirect(
+                            $app['url_generator']->generate('keywords_index'),
+                            301
+                        );
+                    }
+                } catch (\Exception $e) {
+                    $errors[] = 'Coś poszło niezgodnie z planem';
                 }
-            } catch (\Exception $e) {
-                $errors[] = 'Coś poszło niezgodnie z planem';
             }
+
+            $this->view['form'] = $form->createView();
+
+            return $app['twig']->render('keywords/add.twig', $this->view);
+        } else {
+            $app['session']->getFlashBag()->add(
+                'message', array(
+                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                )
+            );
+            return $app->redirect(
+                $app['url_generator']->generate('articles_index'),
+                301
+            );
         }
-
-        $this->view['form'] = $form->createView();
-
-        return $app['twig']->render('keywords/add.twig', $this->view);
     }
 
     /**
@@ -189,43 +202,61 @@ class KeywordsController implements ControllerProviderInterface
      */
     public function editAction(Application $app, Request $request)
     {
+        if ($app['security']->isGranted('ROLE_ADMIN')) {
 
-        $keywordsModel = new KeywordsModel($app);
-        $id = (int)$request->get('id', 0);
-        $keyword = $keywordsModel->getKeyword($id);
 
-        if (count($keyword)) {
 
-            $form = $app['form.factory']->createBuilder('form', $keyword)
-                ->add(
-                    'id', 'hidden',
-                    array(
-                        'data' => $id,
-                        'constraints' => array(
-                            new Assert\NotBlank(),
-                            new Assert\Type(array('type' => 'digit'))
+            $keywordsModel = new KeywordsModel($app);
+            $id = (int)$request->get('id', 0);
+            $keyword = $keywordsModel->getKeyword($id);
+
+            if (count($keyword)) {
+
+                $form = $app['form.factory']->createBuilder('form', $keyword)
+                    ->add(
+                        'id', 'hidden',
+                        array(
+                            'data' => $id,
+                            'constraints' => array(
+                                new Assert\NotBlank(),
+                                new Assert\Type(array('type' => 'digit'))
+                            )
                         )
                     )
-                )
-                ->add(
-                    'word', 'text',
-                    array(
-                        'constraints' => array(
-                            new Assert\NotBlank(),
-                            new Assert\Length(array('min' => 3))
+                    ->add(
+                        'word', 'text',
+                        array(
+                            'constraints' => array(
+                                new Assert\NotBlank(),
+                                new Assert\Length(array('min' => 3))
+                            )
                         )
                     )
-                )
-                ->getForm();
-            $form->handleRequest($request);
+                    ->getForm();
+                $form->handleRequest($request);
 
-            if ($form->isValid()) {
-                $data = $form->getData();
-                $keywordsModel = new KeywordsModel($app);
-                $keywordsModel->saveKeyword($data);
+                if ($form->isValid()) {
+                    $data = $form->getData();
+                    $keywordsModel = new KeywordsModel($app);
+                    $keywordsModel->saveKeyword($data);
+                    $app['session']->getFlashBag()->add(
+                        'message', array(
+                            'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś wpis.')
+                        )
+                    );
+                    return $app->redirect(
+                        $app['url_generator']->generate('keywords_index'),
+                        301
+                    );
+                }
+
+                $this->view['id'] = $id;
+                $this->view['form'] = $form->createView();
+
+            } else {
                 $app['session']->getFlashBag()->add(
                     'message', array(
-                        'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś wpis.')
+                        'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
                     )
                 );
                 return $app->redirect(
@@ -234,150 +265,11 @@ class KeywordsController implements ControllerProviderInterface
                 );
             }
 
-            $this->view['id'] = $id;
-            $this->view['form'] = $form->createView();
-
+            return $app['twig']->render('keywords/edit.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
-                )
-            );
-            return $app->redirect(
-                $app['url_generator']->generate('keywords_index'),
-                301
-            );
-        }
-
-        return $app['twig']->render('keywords/edit.twig', $this->view);
-    }
-
-    public function deleteAction(Application $app, Request $request)
-    {
-        $keywordsModel = new KeywordsModel($app);
-        $id = (int)$request->get('id', 0);
-        $keyword = $keywordsModel->getKeyword($id);
-
-        if (count($keyword)) {
-            $data = array();
-            $form = $app['form.factory']->createBuilder('form', $data)
-                ->add(
-                    'id', 'hidden', array(
-                        'data' => $id,
-                    )
-                )
-                ->add('Tak', 'submit')
-                ->add('Nie', 'submit')
-                ->getForm();
-
-            $form->handleRequest($request);
-
-            if ($form->isValid()) {
-                if ($form->get('Tak')->isClicked()) {
-                    $data = $form->getData();
-
-                    try {
-                        $this->_model->removeKeyword($data);
-
-                        $app['session']->getFlashBag()->add(
-                            'message', array(
-                                'type' => 'success',
-                                'content' =>
-                                    'Słowo kluczowe zostało usunięte'
-                            )
-                        );
-                        return $app->redirect(
-                            $app['url_generator']->generate(
-                                'keywords_index'
-                            ), 301
-                        );
-                    } catch (\Exception $e) {
-                        $errors[] = 'Coś poszło niezgodnie z planem';
-                    }
-                } else {
-                    return $app->redirect(
-                        $app['url_generator']->generate(
-                            'keywords_index'
-                        ), 301
-                    );
-                }
-            }
-
-            $this->view['id'] = $id;
-            $this->view['form'] = $form->createView();
-
-        } else {
-            $app['session']->getFlashBag()->add(
-                'message', array(
-                    'type' => 'danger',
-                    'content' => 'Nie znaleziono postu'
-                )
-            );
-            return $app->redirect(
-                $app['url_generator']->generate(
-                    'keywords_index'
-                ), 301
-            );
-        }
-        return $app['twig']->render('keywords/delete.twig', $this->view);
-    }
-
-    public function connectAction(Application $app, Request $request)
-    {
-        $article_id = (int)$request->get('id', 0);
-        $checkArticle = $this->_article->checkArticleId($article_id);
-
-        if ($checkArticle) {
-            $keywords = $this->_model->getKeywordsArray();
-            $form = $app['form.factory']->createBuilder(
-                new ArticleKeywordForm(), array(
-                'keywords' => $keywords,
-                'article_id' => $article_id))
-                ->getForm();
-
-            $form->handleRequest($request);
-
-            if ($form->isValid()) {
-                $data = $form->getData();
-
-                $checkTag = $this->_model->checkIfKeywordForArticleExist($data);
-                if (!$checkTag) {
-                    $this->_model->connectKeywordWithArticle($data);
-
-                    $app['session']->getFlashBag()->add(
-                        'message', array(
-                            'type' => 'success',
-                            'content' => 'Słowo kluczowe zostało dodane'
-                        )
-                    );
-                    return $app->redirect(
-                        $app['url_generator']->generate(
-                            'articles_view'
-                        ), 301
-                    );
-                } else {
-                    $app['session']->getFlashBag()->add(
-                        'message', array(
-                            'type' => 'danger',
-                            'content' => 'Słowo kluczowe jest już przypisane'
-                        )
-                    );
-                    return $app->redirect(
-                        $app['url_generator']->generate(
-                            'articles_index'
-                        ), 301
-                    );
-                }
-            }
-            return $app['twig']->render('keywords/connect.twig', array(
-                    'form' => $form->createView()
-                )
-            );
-
-        }  else {
-            $app['session']->getFlashBag()->add(
-                'message', array(
-                    'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
+                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
                 )
             );
             return $app->redirect(
@@ -385,7 +277,171 @@ class KeywordsController implements ControllerProviderInterface
                 301
             );
         }
+    }
 
+    public function deleteAction(Application $app, Request $request)
+    {
+        if ($app['security']->isGranted('ROLE_ADMIN')) {
+
+
+            $keywordsModel = new KeywordsModel($app);
+            $id = (int)$request->get('id', 0);
+            $keyword = $keywordsModel->getKeyword($id);
+
+            if (count($keyword)) {
+                $data = array();
+                $form = $app['form.factory']->createBuilder('form', $data)
+                    ->add(
+                        'id', 'hidden', array(
+                            'data' => $id,
+                        )
+                    )
+                    ->add('Tak', 'submit')
+                    ->add('Nie', 'submit')
+                    ->getForm();
+
+                $form->handleRequest($request);
+
+                if ($form->isValid()) {
+                    if ($form->get('Tak')->isClicked()) {
+                        $data = $form->getData();
+
+                        try {
+                            $this->_model->removeKeyword($data);
+
+                            $app['session']->getFlashBag()->add(
+                                'message', array(
+                                    'type' => 'success',
+                                    'content' =>
+                                        'Słowo kluczowe zostało usunięte'
+                                )
+                            );
+                            return $app->redirect(
+                                $app['url_generator']->generate(
+                                    'keywords_index'
+                                ), 301
+                            );
+                        } catch (\Exception $e) {
+                            $errors[] = 'Coś poszło niezgodnie z planem';
+                        }
+                    } else {
+                        return $app->redirect(
+                            $app['url_generator']->generate(
+                                'keywords_index'
+                            ), 301
+                        );
+                    }
+                }
+
+                $this->view['id'] = $id;
+                $this->view['form'] = $form->createView();
+
+            } else {
+                $app['session']->getFlashBag()->add(
+                    'message', array(
+                        'type' => 'danger',
+                        'content' => 'Nie znaleziono postu'
+                    )
+                );
+                return $app->redirect(
+                    $app['url_generator']->generate(
+                        'keywords_index'
+                    ), 301
+                );
+            }
+            return $app['twig']->render('keywords/delete.twig', $this->view);
+        } else {
+            $app['session']->getFlashBag()->add(
+                'message', array(
+                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                )
+            );
+            return $app->redirect(
+                $app['url_generator']->generate('articles_index'),
+                301
+            );
+        }
+    }
+
+    public function connectAction(Application $app, Request $request)
+    {
+        if ($app['security']->isGranted('ROLE_ADMIN')) {
+
+
+            $article_id = (int)$request->get('id', 0);
+            $checkArticle = $this->_article->checkArticleId($article_id);
+
+            if ($checkArticle) {
+                $keywords = $this->_model->getKeywordsArray();
+                $form = $app['form.factory']->createBuilder(
+                    new ArticleKeywordForm(), array(
+                    'keywords' => $keywords,
+                    'article_id' => $article_id))
+                    ->getForm();
+
+                $form->handleRequest($request);
+
+                if ($form->isValid()) {
+                    $data = $form->getData();
+
+                    $checkTag = $this->_model->checkIfKeywordForArticleExist($data);
+                    if (!$checkTag) {
+                        $this->_model->connectKeywordWithArticle($data);
+
+                        $app['session']->getFlashBag()->add(
+                            'message', array(
+                                'type' => 'success',
+                                'content' => 'Słowo kluczowe zostało dodane'
+                            )
+                        );
+                        return $app->redirect(
+                            $app['url_generator']->generate(
+                                'articles_view', array('id' => $article_id)
+                            ), 301
+                        );
+                    } else {
+                        $app['session']->getFlashBag()->add(
+                            'message', array(
+                                'type' => 'danger',
+                                'content' => 'Słowo kluczowe jest już przypisane'
+                            )
+                        );
+                        return $app->redirect(
+                            $app['url_generator']->generate(
+                                'articles_index'
+                            ), 301
+                        );
+                    }
+                }
+                return $app['twig']->render('keywords/connect.twig', array(
+                        'form' => $form->createView()
+                    )
+                );
+
+            }  else {
+                $app['session']->getFlashBag()->add(
+                    'message', array(
+
+                        'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
+                    )
+                );
+                return $app->redirect(
+                    $app['url_generator']->generate('articles_index'),
+                    301
+                );
+            }
+
+        } else {
+            $app['session']->getFlashBag()->add(
+                'message', array(
+                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                )
+            );
+            return $app->redirect(
+                $app['url_generator']->generate('articles_index'),
+                301
+            );
+        }
     }
 }
 

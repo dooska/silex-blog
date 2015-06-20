@@ -190,7 +190,8 @@ class UsersModel
         $login = $this->getCurrentUser($app);
         $iduser = $this->getUserByLogin($login);
 
-        return $iduser['iduser'];
+
+        return $iduser['id'];
     }
 
     /**
@@ -227,6 +228,92 @@ class UsersModel
         } else {
             return false;
         }
+    }
+
+
+
+
+
+
+    /**
+     * @param $app
+     * @access public
+     *
+     * @return Array
+     */
+    public function getCurrentUserInfo($app)
+    {
+        $login = $this->getCurrentUsername($app);
+        $info = $this->getUserInfo($login);
+
+        return $info;
+    }
+
+    /**
+     * This method gets currently logged user.
+     *
+     * @access public
+     * @param application
+     *
+     * @return array $user
+     *
+     */
+    protected function getCurrentUsername($app)
+    {
+        $token = $app['security']->getToken();
+
+        if (null !== $token) {
+            $user = $token->getUser()->getUsername();
+        }
+
+        return $user;
+    }
+
+    /**
+     * Gets user by login.
+     *
+     * @param string $login
+     *
+     * @access public
+     * @return Array Information about searching user.
+     */
+    public function getUserInfo($login)
+    {
+        $sql = 'SELECT id, login, email, role_id FROM users WHERE login = ?';
+        return $this->_db->fetchAssoc($sql, array((string) $login));
+    }
+
+    /**
+     * Changes information about user
+     *
+     * @param $id
+     * @param $data
+     * @param $password
+     */
+    public function updateUser($id, $data, $password)
+    {
+        if (isset($id) && ctype_digit((string)$id)) {
+
+//            var_dump($id);
+//            var_dump($data);
+//            var_dump($password);
+//            die();
+            $query = 'UPDATE `users`
+                  SET `login`= ?,
+                      `email`= ?,
+                      `password`= ?,
+                  WHERE `id`= ?';
+
+            $this->_db->executeQuery(
+                $query, array(
+                    $data['login'],
+                    $data['email'],
+                    $password,
+                    $id
+                )
+            );
+        }
+
     }
 
 }

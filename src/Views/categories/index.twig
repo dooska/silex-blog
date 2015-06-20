@@ -6,11 +6,13 @@
     <h1>
         {{ 'Lista kategorii'|trans }}
     </h1>
-    <p>
-        <a href="{{ url('categories_add') }}" class="btn btn-success" title="{{ 'Add category'|trans }}">
-            {{ 'Dodaj kategorię'|trans }}
-        </a>
-    </p>
+    {% if is_granted('ROLE_ADMIN') %}
+        <p>
+            <a href="{{ url('categories_add') }}" class="btn btn-success" title="{{ 'Add category'|trans }}">
+                {{ 'Dodaj kategorię'|trans }}
+            </a>
+        </p>
+    {% endif %}
 
     {%  if categories|length > 0 %}
 
@@ -39,11 +41,14 @@
                 <tr>
                     <td>{{ category.category_id|e }}</td>
                     <td>{{ category.category_name|e }}</td>
-                    <td>
-                        <a href="{{ url('categories_view', {'id': category.category_id}) }}"class="btn btn-primary btn-sm" title="{{ 'View category'|trans }}">{{ 'Zobacz artykuły'|trans }}</a>
-                        <a href="{{ url('categories_edit', {'id': category.category_id}) }}"class="btn btn-warning btn-sm" title="{{ 'Edit category'|trans }}">{{ 'Edytuj kategorię'|trans }}</a>
-                        <a href="{{ url('categories_delete', {'id': category.category_id}) }}" class="btn btn-danger btn-sm" title="{{ 'Delete category'|trans }}">{{ 'Usuń kategorię'|trans }}</a>
-                    </td>
+                        <td>
+                            <a href="{{ url('categories_view', {'id': category.category_id}) }}"class="btn btn-primary btn-sm" title="{{ 'View category'|trans }}">{{ 'Zobacz artykuły'|trans }}</a>
+                            {% if is_granted('ROLE_ADMIN') %}
+
+                            <a href="{{ url('categories_edit', {'id': category.category_id}) }}"class="btn btn-warning btn-sm" title="{{ 'Edit category'|trans }}">{{ 'Edytuj kategorię'|trans }}</a>
+                            <a href="{{ url('categories_delete', {'id': category.category_id}) }}" class="btn btn-danger btn-sm" title="{{ 'Delete category'|trans }}">{{ 'Usuń kategorię'|trans }}</a>
+                        </td>
+                    {% endif %}
                 </tr>
             {% endfor %}
             </tbody>

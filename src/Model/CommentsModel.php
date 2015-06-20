@@ -113,16 +113,14 @@ class CommentsModel
      */
     public function editComment($data)
     {
-
-
         if (isset($data['comment_id'])
-            && ctype_digit((string)$data['idcomment'])) {
+            && ctype_digit((string)$data['comment_id'])) {
             $sql = 'UPDATE comments
                 SET comment_content = ?, published_date = ?
             WHERE comment_id = ?';
             $this->_db->executeQuery(
                 $sql, array(
-                    $data['content'],
+                    $data['comment_content'],
                     $data['published_date'],
                     $data['comment_id']
                 )

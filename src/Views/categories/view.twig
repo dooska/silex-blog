@@ -2,7 +2,9 @@
 
 {% block content %}
     <div class="row">
-        <a href="{{ url('categories_index') }}" class="btn btn-default">Powrót do listy kategorii</a>
+        <div class="back-button">
+            <a href="{{ url('categories_index') }}" class="btn btn-default">Powrót do listy kategorii</a>
+        </div>
         <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9">
             {% if category %}
                 <h2>Posty w kategorii {{ category.category_name }}</h2>
@@ -20,13 +22,13 @@
                     <th>Treść posta</th>
                     <th>Akcja</th>
                     </thead>
-                {% for article in category_articles %}
-                    <tr>
-                        <td>{{ article.title }}</td>
-                        <td>{{ article.content }}</td>
-                        <td><a href="{{ url('articles_view', {'id': article.article_id}) }}" class="btn btn-primary">Pokaż</a></td>
-                    </tr>
-                {% endfor %}
+                    {% for article in category_articles %}
+                        <tr>
+                            <td>{{ article.title }}</td>
+                            <td>{{ article.content }}</td>
+                            <td><a href="{{ url('articles_view', {'id': article.article_id}) }}" class="btn btn-primary">Pokaż</a></td>
+                        </tr>
+                    {% endfor %}
                 </table>
 
             {% else %}

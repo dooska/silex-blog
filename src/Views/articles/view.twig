@@ -27,10 +27,12 @@
             {% for comment in comments %}
                 <div class="thumbnail col-xs-12">
                     <p>{{ comment.comment_content }}</p>
-                    <a href="{{ url('comments_edit', {'id': comment.comment_id}) }}"
-                       title="{{ 'Edit article'|trans }}">{{ 'Edytuj komentarz'|trans }}</a>
-                    <a href="{{ url('comments_delete', {'id': article.article_id}) }}"
-                       title="{{ 'Delete article'|trans }}">{{ 'Usuń komentarz'|trans }}</a>
+                    {% if (user is defined and comment.user_id == user.id) or is_granted('ROLE_ADMIN') %}
+                        <a href="{{ url('comments_edit', {'id': comment.comment_id}) }}" class="btn btn-warning btn-xs"
+                           title="{{ 'Edit comment'|trans }}">{{ 'Edytuj komentarz'|trans }}</a>
+                        <a href="{{ url('comments_delete', {'id': article.article_id}) }}" class="btn btn-danger btn-xs"
+                           title="{{ 'Delete comment'|trans }}">{{ 'Usuń komentarz'|trans }}</a>
+                    {% endif %}
                 </div>
             {% endfor %}
         {% else %}
@@ -38,11 +40,11 @@
         {% endif %}
         {% if article %}
             <a href="{{ url('comments_add', {'article_id': article.article_id}) }}"
-               class="btn btn-primary"
+               class="btn btn-success"
                title="{{ 'Add comment'|trans }}">{{ 'Dodaj komentarz'|trans }}</a>
         {% else %}
             <a href="{{ url('comments_add', {'article_id': app.request.get('article_id')}) }}"
-               class="btn btn-primary"
+               class="btn btn-success"
                title="{{ 'Add comment'|trans }}">{{ 'Dodaj komentarz'|trans }}</a>
         {% endif %}
 

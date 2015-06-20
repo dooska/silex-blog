@@ -6,11 +6,13 @@
     <h1>
         {{ 'Lista słów kluczowych'|trans }}
     </h1>
-    <p>
-        <a href="{{ url('keywords_add') }}" class="btn btn-success" title="{{ 'Add keyword'|trans }}">
-            {{ 'Dodaj słowo kluczowe'|trans }}
-        </a>
-    </p>
+    {% if is_granted('ROLE_ADMIN') %}
+        <p>
+            <a href="{{ url('keywords_add') }}" class="btn btn-success" title="{{ 'Add keyword'|trans }}">
+                {{ 'Dodaj słowo kluczowe'|trans }}
+            </a>
+        </p>
+    {% endif %}
 
     {%  if keywords|length > 0 %}
 
@@ -41,8 +43,10 @@
                     <td>{{ keyword.word|e }}</td>
                     <td>
                         <a href="{{ url('keywords_view', {'id': keyword.keyword_id}) }}" class="btn btn-primary btn-sm" title="{{ 'View articles'|trans }}">{{ 'Zobacz artykuły'|trans }}</a>
-                        <a href="{{ url('keywords_edit', {'id': keyword.keyword_id}) }}" class="btn btn-warning btn-sm" title="{{ 'Edit keyword'|trans }}">{{ 'Edytuj słowo kluczowe'|trans }}</a>
-                        <a href="{{ url('keywords_delete', {'id': keyword.keyword_id}) }}" class="btn btn-danger btn-sm" title="{{ 'Delete keyword'|trans }}">{{ 'Usuń słowo kluczowe'|trans }}</a>
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <a href="{{ url('keywords_edit', {'id': keyword.keyword_id}) }}" class="btn btn-warning btn-sm" title="{{ 'Edit keyword'|trans }}">{{ 'Edytuj słowo kluczowe'|trans }}</a>
+                            <a href="{{ url('keywords_delete', {'id': keyword.keyword_id}) }}" class="btn btn-danger btn-sm" title="{{ 'Delete keyword'|trans }}">{{ 'Usuń słowo kluczowe'|trans }}</a>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}

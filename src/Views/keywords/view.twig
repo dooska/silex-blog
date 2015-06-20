@@ -2,7 +2,9 @@
 
 {% block content %}
     <div class="row">
-        <a href="{{ url('keywords_index') }}" class="btn btn-default">Powrót do listy słów kluczowych</a>
+        <div class="back-button">
+            <a href="{{ url('keywords_index') }}" class="btn btn-default">Powrót do listy słów kluczowych</a>
+        </div>
 
         <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9">
             {% if keyword %}
