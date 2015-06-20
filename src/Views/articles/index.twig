@@ -7,7 +7,7 @@
         {{ 'Lista artykułów'|trans }}
     </h1>
     <p>
-        <a href="{{ url('articles_add') }}" title="{{ 'Add article'|trans }}">
+        <a href="{{ url('articles_add') }}" class="btn btn-success btn-sm" title="{{ 'Add article'|trans }}">
             {{ 'Dodaj artykuł'|trans }}
         </a>
     </p>
@@ -44,13 +44,16 @@
                     <td>{{ article.content|e }}</td>
                     <td>{{ article.category_id|e }}</td>
                     <td>
-                        <a href="{{ url('articles_view', {'id': article.article_id}) }}" title="{{ 'View article'|trans }}">{{ 'Zobacz artykuł'|trans }}</a>
+                        <a href="{{ url('articles_view', {'id': article.article_id}) }}"class="btn btn-primary btn-sm" title="{{ 'View article'|trans }}">{{ 'Zobacz artykuł'|trans }}</a>
                     </td>
                     <td>
-                        <a href="{{ url('articles_edit', {'id': article.article_id}) }}" title="{{ 'Edit article'|trans }}">{{ 'Edytuj artykuł'|trans }}</a>
+                        <a href="{{ url('articles_edit', {'id': article.article_id}) }}" class="btn btn-warning btn-sm" title="{{ 'Edit article'|trans }}">{{ 'Edytuj artykuł'|trans }}</a>
                     </td>
                     <td>
-                        <a href="{{ url('articles_delete', {'id': article.article_id}) }}" title="{{ 'Delete article'|trans }}">{{ 'Usuń artykuł'|trans }}</a>
+                        <a href="{{ url('connect_keyword', {'id': article.article_id}) }}" class="btn btn-default btn-sm">Dodaj słowo kluczowe</a>
+                    </td>
+                    <td>
+                        <a href="{{ url('articles_delete', {'id': article.article_id}) }}" class="btn btn-danger btn-sm" title="{{ 'Delete article'|trans }}">{{ 'Usuń artykuł'|trans }}</a>
                     </td>
                 </tr>
             {% endfor %}

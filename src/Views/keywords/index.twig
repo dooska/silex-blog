@@ -31,8 +31,7 @@
             <tr>
                 <th>{{ 'Id'|trans }}</th>
                 <th>{{ 'Tytuł'|trans }}</th>
-                <th>{{ 'Akcja'|trans }}</th>
-                <th colspan="3">&nbsp;</th>
+                <th>{{ ''|trans }}</th>
             </tr>
             </thead>
             <tbody>
@@ -41,13 +40,9 @@
                     <td>{{ keyword.keyword_id|e }}</td>
                     <td>{{ keyword.word|e }}</td>
                     <td>
-                        <a href="{{ url('keywords_view', {'id': keyword.keyword_id}) }}" title="{{ 'View keyword'|trans }}">{{ 'Zobacz słowo kluczowe'|trans }}</a>
-                    </td>
-                    <td>
-                        <a href="{{ url('keywords_edit', {'id': keyword.keyword_id}) }}" title="{{ 'Edit keyword'|trans }}">{{ 'Edytuj słowo kluczowe'|trans }}</a>
-                    </td>
-                    <td>
-                        <a href="{{ url('keywords_delete', {'id': keyword.keyword_id}) }}" title="{{ 'Delete keyword'|trans }}">{{ 'Usuń słowo kluczowe'|trans }}</a>
+                        <a href="{{ url('keywords_view', {'id': keyword.keyword_id}) }}" class="btn btn-primary btn-sm" title="{{ 'View articles'|trans }}">{{ 'Zobacz artykuły'|trans }}</a>
+                        <a href="{{ url('keywords_edit', {'id': keyword.keyword_id}) }}" class="btn btn-warning btn-sm" title="{{ 'Edit keyword'|trans }}">{{ 'Edytuj słowo kluczowe'|trans }}</a>
+                        <a href="{{ url('keywords_delete', {'id': keyword.keyword_id}) }}" class="btn btn-danger btn-sm" title="{{ 'Delete keyword'|trans }}">{{ 'Usuń słowo kluczowe'|trans }}</a>
                     </td>
                 </tr>
             {% endfor %}

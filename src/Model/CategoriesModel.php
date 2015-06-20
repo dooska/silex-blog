@@ -94,7 +94,7 @@ class CategoriesModel
     public function getCategoryArticles($id)
     {
         if (($id != '') && ctype_digit((string)$id)) {
-            $query = 'SELECT articles.title,articles.content, articles.category_id
+            $query = 'SELECT articles.article_id, articles.title,articles.content, articles.category_id
                       FROM articles
                     WHERE articles.category_id = ?';
             $result = $this->_db->fetchAll($query, array($id));

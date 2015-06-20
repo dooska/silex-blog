@@ -2,6 +2,8 @@
 
 {% block content %}
     <div class="row">
+        <a href="{{ url('keywords_index') }}" class="btn btn-default">Powrót do listy słów kluczowych</a>
+
         <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9">
             {% if keyword %}
                 <h2>Posty ze słowem kluczowym {{ keyword.word }}</h2>
@@ -19,11 +21,15 @@
                     <th>Treść posta</th>
                     <th>Akcja</th>
                     </thead>
-                {% for keyword in keyword_articles %}
+                {% for article in keyword_articles %}
                     <tr>
-                        <td>{{ keyword.title }}</td>
-                        <td>{{ keyword.content }}</td>
-                        <td><a href="{{ url('articles_view', {'id': keyword.keyword_id}) }}" class="btn btn-default">Pokaż</a></td>
+                        <td>{{ article.title }}</td>
+                        <td>{{ article.content }}</td>
+                        <td><a href="{{ url('articles_view',
+                            {'id': article.article_id}) }}"
+                               class="btn btn-primary">Pokaż
+                            </a>
+                        </td>
                     </tr>
                 {% endfor %}
                 </table>
@@ -34,5 +40,4 @@
         </div>
     </div>
 
-    <a href="{{ url('keywords_index') }}" class="btn btn-default">Powrót do listy słów kluczowych</a>
 {% endblock %}

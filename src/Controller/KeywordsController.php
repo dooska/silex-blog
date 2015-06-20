@@ -19,6 +19,7 @@ use Silex\ControllerProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Model\KeywordsModel;
 use Model\ArticlesModel;
+use Form\KeywordAddForm;
 use Form\ArticleKeywordForm;
 
 /**
@@ -117,9 +118,8 @@ class KeywordsController implements ControllerProviderInterface
     public function viewAction(Application $app, Request $request)
     {
         $id = (int)$request->get('id', null);
-        $keywordsModel = new KeywordsModel($app);
-        $this->view['keyword'] = $keywordsModel->getKeyword($id);
-        $this->view['keyword_articles'] = null;// $keywordsModel->getKeywordArticles($id);
+        $this->view['keyword'] = $this->_model->getKeyword($id);
+        $this->view['keyword_articles'] = $this->_model->getKeywordArticles($id);
         return $app['twig']->render('keywords/view.twig', $this->view);
     }
 
@@ -136,35 +136,42 @@ class KeywordsController implements ControllerProviderInterface
     {
         // default values:
 
-        $form = $app['form.factory']->createBuilder('form')
-            ->add(
-                'word', 'text',
-                array(
-                    'constraints' => array(
-                        new Assert\NotBlank(),
-                        new Assert\Length(array('min' => 3))
-                    ),
-                    'attr' => array(
-                        'class' => 'form-control'
-                    )
-                )
-            )
+        $form = $app['form.factory']->createBuilder(
+            new KeywordAddForm(), array())
             ->getForm();
+
         $form->handleRequest($request);
 
         if ($form->isValid()) {
             $data = $form->getData();
-            $keywordsModel = new KeywordsModel($app);
-            $keywordsModel->saveKeyword($data);
-            $app['session']->getFlashBag()->add(
-                'message', array(
-                    'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nową kategorię.')
-                )
-            );
-            return $app->redirect(
-                $app['url_generator']->generate('keywords_index'),
-                301
-            );
+            try {
+                $check = $this->_model->checkIfKeywordExists($data);
+                if(!$check) {
+                    $this->_model->saveKeyword($data);
+                    $app['session']->getFlashBag()->add(
+                        'message', array(
+                            'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nowe słowo kluczowe.')
+                        )
+                    );
+                    return $app->redirect(
+                        $app['url_generator']->generate('keywords_index'),
+                        301
+                    );
+                } else {
+                    $app['session']->getFlashBag()->add(
+                        'message', array(
+                            'type' => 'danger',
+                            'content' => $app['translator']->trans('Słowo kluczowe istnieje.')
+                        )
+                    );
+                    return $app->redirect(
+                        $app['url_generator']->generate('keywords_index'),
+                        301
+                    );
+                }
+            } catch (\Exception $e) {
+                $errors[] = 'Coś poszło niezgodnie z planem';
+            }
         }
 
         $this->view['form'] = $form->createView();
@@ -276,7 +283,7 @@ class KeywordsController implements ControllerProviderInterface
                             'message', array(
                                 'type' => 'success',
                                 'content' =>
-                                    'Artykuł został usunięty'
+                                    'Słowo kluczowe zostało usunięte'
                             )
                         );
                         return $app->redirect(
@@ -325,13 +332,16 @@ class KeywordsController implements ControllerProviderInterface
             $form = $app['form.factory']->createBuilder(
                 new ArticleKeywordForm(), array(
                 'keywords' => $keywords,
-                'article_id' => $article_id))->getForm();
+                'article_id' => $article_id))
+                ->getForm();
 
             $form->handleRequest($request);
 
             if ($form->isValid()) {
                 $data = $form->getData();
-                try {
+
+                $checkTag = $this->_model->checkIfKeywordForArticleExist($data);
+                if (!$checkTag) {
                     $this->_model->connectKeywordWithArticle($data);
 
                     $app['session']->getFlashBag()->add(
@@ -342,11 +352,21 @@ class KeywordsController implements ControllerProviderInterface
                     );
                     return $app->redirect(
                         $app['url_generator']->generate(
+                            'articles_view'
+                        ), 301
+                    );
+                } else {
+                    $app['session']->getFlashBag()->add(
+                        'message', array(
+                            'type' => 'danger',
+                            'content' => 'Słowo kluczowe jest już przypisane'
+                        )
+                    );
+                    return $app->redirect(
+                        $app['url_generator']->generate(
                             'articles_index'
                         ), 301
                     );
-                } catch (\Exception $e) {
-                    $errors[] = 'Coś poszło niezgodnie z planem';
                 }
             }
             return $app['twig']->render('keywords/connect.twig', array(
@@ -365,8 +385,10 @@ class KeywordsController implements ControllerProviderInterface
                 301
             );
         }
+
     }
 }
+
 
 
 

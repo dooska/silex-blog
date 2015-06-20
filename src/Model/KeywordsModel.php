@@ -112,9 +112,11 @@ class KeywordsModel
     public function getKeywordArticles($id)
     {
         if (($id != '') && ctype_digit((string)$id)) {
-            $query = 'SELECT articles.title,articles.content, articles.keyword_id
-                      FROM articles
-                    WHERE articles.keyword_id = ?';
+            $query = 'SELECT articles.article_id, articles.title, articles.content, article_keywords.article_id, article_keywords.keyword_id
+                        FROM articles
+                        JOIN article_keywords
+                        ON articles.article_id = article_keywords.article_id
+                        WHERE article_keywords.keyword_id = ?';
             $result = $this->_db->fetchAll($query, array($id));
             return $result;
         }
@@ -204,11 +206,30 @@ class KeywordsModel
         }
     }
 
+    public function checkIfKeywordForArticleExist($data)
+    {
+        $query = 'SELECT article_id, keyword_id
+                  FROM `article_keywords`
+                  WHERE(`article_id` = ? AND `keyword_id` = ?)';
+        $result = $this->_db->fetchAssoc($query, array((int)$data['article_id'], (int)$data['keyword_id']));
+        return $result;
+    }
+
     public function connectKeywordWithArticle($data)
     {
         $query = 'INSERT INTO `silex-blog`.`article_keywords` (`article_id`, `keyword_id`) VALUES (?, ?)';
-        $result = $this->_db->fetchAll($query, array((int)$data['article_id'], (int)$data['keyword_id']));
+        $result = $this->_db->executeQuery($query, array((int)$data['article_id'], (int)$data['keyword_id']));
         return $result;
-
     }
+
+    public function checkIfKeywordExists($data)
+    {
+        $query = 'SELECT keyword_id
+                  FROM `keywords`
+                  WHERE(`word` = ?)';
+        $result = $this->_db->fetchAssoc($query, array($data['word']));
+        return $result;
+    }
+
+
 }
