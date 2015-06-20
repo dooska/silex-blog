@@ -182,8 +182,15 @@ class CategoriesModel
             // update record
             $id = $category['id'];
             unset($category['id']);
+            $this->removeCategoryArticles($category['id']);
             return $this->_db->delete('categories', array('category_id' => $id));
         }
+    }
+
+    protected function removeCategoryArticles($id)
+    {
+        $query = 'DELETE FROM `articles` WHERE `category_id`=?';
+        $this->_db->executeQuery($query, array($id));
     }
 
 

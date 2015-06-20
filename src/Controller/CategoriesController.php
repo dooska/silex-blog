@@ -298,7 +298,7 @@ class CategoriesController implements ControllerProviderInterface
                                 'message', array(
                                     'type' => 'success',
                                     'content' =>
-                                        'Artykuł został usunięty'
+                                        'Kategoria została usunięta wraz z artykułami'
                                 )
                             );
                             return $app->redirect(

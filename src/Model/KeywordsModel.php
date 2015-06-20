@@ -202,8 +202,15 @@ class KeywordsModel
             // update record
             $id = $keyword['id'];
             unset($keyword['id']);
+            $this->removeKeywordArticles((int)$keyword['id']);
             return $this->_db->delete('keywords', array('keyword_id' => $id));
         }
+    }
+
+    protected function removeKeywordArticles($id)
+    {
+        $query = 'DELETE FROM `article_keywords` WHERE `keyword_id`=?';
+        $this->_db->executeQuery($query, array($id));
     }
 
     public function checkIfKeywordForArticleExist($data)
