@@ -375,7 +375,7 @@ class CommentsController implements ControllerProviderInterface
                                 );
                                 return $app->redirect(
                                     $app['url_generator']->generate(
-                                        'articles_index'
+                                        'articles_view', array('id' => $comment['article_id'])
                                     ), 301
                                 );
                             } catch (\Exception $e) {
