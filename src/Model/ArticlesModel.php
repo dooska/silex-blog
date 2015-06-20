@@ -99,7 +99,10 @@ class ArticlesModel
      */
     public function getArticlesPage($page, $limit)
     {
-        $query = 'SELECT article_id, title, content, category_id FROM articles';
+        $query = 'SELECT article_id, title, content, categories.category_id, categories.category_name
+                  FROM articles
+                  JOIN categories
+                  ON articles.category_id = categories.category_id';
         $statement = $this->_db->prepare($query);
         $statement->bindValue('start', ($page-1)*$limit, \PDO::PARAM_INT);
         $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
