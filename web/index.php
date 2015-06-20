@@ -67,13 +67,15 @@ $app->register(
             ),
         ),
         'security.access_rules' => array(
-            array('^/article.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
+            array('^/articles.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
             array('^/categories.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
             array('^/register.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
             array('^/auth.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
             array('^/comments.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
+            array('^/keywords.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
             array('^/.+$', 'ROLE_ADMIN')
         ),
+
         'security.role_hierarchy' => array(
             'ROLE_ADMIN' => array('ROLE_USER'),
         ),
@@ -104,6 +106,8 @@ $app->mount('/articles', new Controller\ArticlesController());
 $app->mount('/categories', new Controller\CategoriesController());
 $app->mount('/auth/', new Controller\AuthController());
 $app->mount('/comments/', new Controller\CommentsController());
+$app->mount('/keywords/', new Controller\KeywordsController());
+$app->mount('/users/', new Controller\UsersController());
 
 
 $app['debug'] = true;
