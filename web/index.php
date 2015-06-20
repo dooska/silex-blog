@@ -73,6 +73,7 @@ $app->register(
             array('^/auth.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
             array('^/comments.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
             array('^/keywords.+$', 'IS_AUTHENTICATED_ANONYMOUSLY'),
+            array('^/users.+$', 'ROLE_USER'),
             array('^/.+$', 'ROLE_ADMIN')
         ),
 
