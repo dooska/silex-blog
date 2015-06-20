@@ -25,7 +25,7 @@
                     </thead>
                 {% for article in keyword_articles %}
                     <tr>
-                        <td>{{ article.id }}</td>
+                        <td>{{ article.article_id }}</td>
                         <td>{{ article.title }}</td>
                         <td><a href="{{ url('articles_view',
                             {'id': article.article_id}) }}"
