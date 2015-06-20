@@ -30,7 +30,7 @@
                     {% if (user is defined and comment.user_id == user.id) or is_granted('ROLE_ADMIN') %}
                         <a href="{{ url('comments_edit', {'id': comment.comment_id}) }}" class="btn btn-warning btn-xs"
                            title="{{ 'Edit comment'|trans }}">{{ 'Edytuj komentarz'|trans }}</a>
-                        <a href="{{ url('comments_delete', {'id': article.article_id}) }}" class="btn btn-danger btn-xs"
+                        <a href="{{ url('comments_delete', {'id': comment.comment_id}) }}" class="btn btn-danger btn-xs"
                            title="{{ 'Delete comment'|trans }}">{{ 'Usuń komentarz'|trans }}</a>
                     {% endif %}
                 </div>
