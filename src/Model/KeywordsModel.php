@@ -229,12 +229,25 @@ class KeywordsModel
         return $result;
     }
 
+    public function disconnectKeywordAndArticle($data)
+    {
+        $query = 'DELETE FROM `article_keywords` WHERE `id`=?';
+        $this->_db->executeQuery($query, array($data['record_id']));
+    }
+
     public function checkIfKeywordExists($data)
     {
         $query = 'SELECT keyword_id
                   FROM `keywords`
                   WHERE(`word` = ?)';
         $result = $this->_db->fetchAssoc($query, array($data['word']));
+        return $result;
+    }
+
+    public function checkIfConnectionExists($record_id)
+    {
+        $query = 'SELECT * FROM `article_keywords` WHERE id = ?';
+        $result = $this->_db->fetchAssoc($query, array($record_id));
         return $result;
     }
 

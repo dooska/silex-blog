@@ -100,15 +100,18 @@ class ArticlesController implements ControllerProviderInterface
      */
     public function indexAction(Application $app, Request $request)
     {
-        $pageLimit = 3;
+        $pageLimit = 10;
         $page = (int) $request->get('page', 1);
-        $articlesModel = new ArticlesModel($app);
-        $pagesCount = $articlesModel->countArticlesPages($pageLimit);
-        $page = $articlesModel->getCurrentPageNumber($page, $pagesCount);
-        $articles = $articlesModel->getArticlesPage($page, $pageLimit);
-        $this->view['paginator']
-            = array('page' => $page, 'pagesCount' => $pagesCount);
-        $this->view['articles'] = $articles;
+        try {
+            $pagesCount = $this->_model->countArticlesPages($pageLimit);
+            $page = $this->_model->getCurrentPageNumber($page, $pagesCount);
+            $articles = $this->_model->getArticlesPage($page, $pageLimit);
+            $this->view['paginator']
+                = array('page' => $page, 'pagesCount' => $pagesCount);
+            $this->view['articles'] = $articles;
+        } catch (\PDOException $e){
+            $app->abort(404, $app['translator']->trans('Album not found'));
+        }
         return $app['twig']->render('articles/index.twig', $this->view);
     }
 
@@ -122,11 +125,15 @@ class ArticlesController implements ControllerProviderInterface
      */
     public function viewAction(Application $app, Request $request)
     {
-        $id = (int)$request->get('id', null);
-        $this->view['article'] = $this->_model->getArticle($id);
-        $this->view['comments'] = $this->_comments_model->getCommentsList($id);
-        $this->view['keywords'] = $this->_model->getArticleKeywords($id);
-        $checkUser = $this->_users_model->_isLoggedIn($app);
+        try {
+            $id = (int)$request->get('id', null);
+            $this->view['article'] = $this->_model->getArticle($id);
+            $this->view['comments'] = $this->_comments_model->getCommentsList($id);
+            $this->view['keywords'] = $this->_model->getArticleKeywords($id);
+            $checkUser = $this->_users_model->_isLoggedIn($app);
+        } catch (\PDOException $e){
+            $app->abort(404, $app['translator']->trans('Album not found'));
+        }
         if($checkUser) {
             $this->view['user'] = $this->_users_model->getCurrentUserInfo($app);
         }
@@ -150,14 +157,8 @@ class ArticlesController implements ControllerProviderInterface
                 'title' => 'Title',
                 'content' => 'Content',
             );
-            $categoriesArray = array();
 
-            //tworzy tablicę asocjacyjną z tabeli kategorii
-            $categories = $this->_category_model->getAll();
-            foreach ($categories as $category) {
-                $categoriesArray[$category['category_id']] = $category['category_name'];
-            }
-
+            $categories = $this->_category_model->getCategoriesToForm();
 
             $form = $app['form.factory']->createBuilder('form', $data)
                 ->add(
@@ -187,7 +188,7 @@ class ArticlesController implements ControllerProviderInterface
                 ->add(
                     'category_id', 'choice',
                     array(
-                        'choices' => $categoriesArray,
+                        'choices' => $categories,
                         'constraints' => array(
                             new Assert\NotBlank(),
                         ),
@@ -200,6 +201,7 @@ class ArticlesController implements ControllerProviderInterface
             $form->handleRequest($request);
 
             if ($form->isValid()) {
+
                 $data = $form->getData();
                 $articlesModel = new ArticlesModel($app);
                 $articlesModel->saveArticle($data);
@@ -246,6 +248,7 @@ class ArticlesController implements ControllerProviderInterface
             $articlesModel = new ArticlesModel($app);
             $id = (int) $request->get('id', 0);
             $article = $articlesModel->getArticle($id);
+            $categories = $this->_category_model->getCategoriesToForm();
 
             if (count($article)) {
 
@@ -275,6 +278,18 @@ class ArticlesController implements ControllerProviderInterface
                             'constraints' => array(
                                 new Assert\NotBlank(),
                                 new Assert\Length(array('min' => 5))
+                            )
+                        )
+                    )
+                    ->add(
+                        'category_id', 'choice',
+                        array(
+                            'choices' => $categories,
+                            'constraints' => array(
+                                new Assert\NotBlank(),
+                            ),
+                            'attr' => array(
+                                'class' => 'form-control'
                             )
                         )
                     )

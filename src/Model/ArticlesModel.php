@@ -188,7 +188,7 @@ class ArticlesModel
 
     public function getArticleKeywords($article_id)
     {
-        $query = 'SELECT DISTINCT keywords.keyword_id, keywords.word FROM article_keywords
+        $query = 'SELECT DISTINCT article_keywords.id, keywords.keyword_id, keywords.word FROM article_keywords
         JOIN keywords
         ON article_keywords.keyword_id = keywords.keyword_id
         WHERE article_keywords.article_id = ?';

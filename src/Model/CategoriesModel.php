@@ -62,6 +62,23 @@ class CategoriesModel
         return !$result ? array() : $result;
     }
 
+    /**
+     * Gets all categories.
+     *
+     * @access public
+     * @return array Result
+     */
+    public function getCategoriesToForm()
+    {
+        $categoriesArray = [];
+        $categories = $this->getAll();
+        foreach ($categories as $category) {
+            $categoriesArray[$category['category_id']] = $category['category_name'];
+        }
+        return $categoriesArray;
+
+    }
+
 
     /**
      * Gets single category data.

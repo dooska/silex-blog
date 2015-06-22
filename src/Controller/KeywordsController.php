@@ -14,6 +14,7 @@
 
 namespace Controller;
 
+use Form\DeleteConnectionForm;
 use Silex\Application;
 use Silex\ControllerProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -81,6 +82,8 @@ class KeywordsController implements ControllerProviderInterface
             ->bind('keywords_index');
         $keywordsController->match('/connect/{id}', array($this, 'connectAction'))
             ->bind('connect_keyword');
+        $keywordsController->match('/disconnect/{id}', array($this, 'disconnectAction'))
+            ->bind('disconnect_keyword');
 //        $keywordsController->get('/{page}', array($this, 'indexAction'))
 //            ->value('page', 1)->bind('keywords_index');
         return $keywordsController;
@@ -367,7 +370,6 @@ class KeywordsController implements ControllerProviderInterface
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
 
-
             $article_id = (int)$request->get('id', 0);
             $checkArticle = $this->_article->checkArticleId($article_id);
 
@@ -422,6 +424,82 @@ class KeywordsController implements ControllerProviderInterface
                 $app['session']->getFlashBag()->add(
                     'message', array(
 
+                        'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
+                    )
+                );
+                return $app->redirect(
+                    $app['url_generator']->generate('articles_index'),
+                    301
+                );
+            }
+
+        } else {
+            $app['session']->getFlashBag()->add(
+                'message', array(
+                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                )
+            );
+            return $app->redirect(
+                $app['url_generator']->generate('articles_index'),
+                301
+            );
+        }
+    }
+
+    public function disconnectAction(Application $app, Request $request)
+    {
+        if ($app['security']->isGranted('ROLE_ADMIN')) {
+
+
+            $record_id = (int)$request->get('id', 0);
+            $checkRecordId = $this->_model->checkIfConnectionExists($record_id);
+            $article_id = $checkRecordId['article_id'];
+
+            if ($checkRecordId) {
+                $form = $app['form.factory']->createBuilder(
+                    new DeleteConnectionForm(), array(
+                    'record_id' => $record_id))
+                    ->getForm();
+
+                $form->handleRequest($request);
+
+                if ($form->isValid()) {
+                    if ($form->get('Tak')->isClicked()) {
+                        $data = $form->getData();
+
+                        try {
+                            $this->_model->disconnectKeywordAndArticle($data);
+
+                            $app['session']->getFlashBag()->add(
+                                'message', array(
+                                    'type' => 'success',
+                                    'content' =>
+                                        'Słowo kluczowe zostało usunięte'
+                                )
+                            );
+                            return $app->redirect(
+                                $app['url_generator']->generate(
+                                    'articles_view',array('id' => (int)$article_id)
+                                ), 301
+                            );
+                        } catch (\Exception $e) {
+                            $errors[] = 'Coś poszło niezgodnie z planem';
+                        }
+                    } else {
+                        return $app->redirect(
+                            $app['url_generator']->generate(
+                                'articles_view',array('id' => (int)$article_id)
+                            ), 301
+                        );
+                    }
+                }
+                return $app['twig']->render('keywords/disconnect.twig', array(
+                        'form' => $form->createView()
+                    )
+                );
+            } else {
+                $app['session']->getFlashBag()->add(
+                    'message', array(
                         'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
                     )
                 );

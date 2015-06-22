@@ -12,7 +12,8 @@
                 <div class="col-sm-10">
                     <span>Słowa kluczowe: </span>
                     {% for keyword in keywords %}
-                        {{ keyword.word }}
+                        <strong>{{ keyword.word }}</strong>
+                        <a href="{{ url('disconnect_keyword', {'id': keyword.id}) }}" class="btn btn-danger btn-xs">Usuń tag</a>
                     {% endfor %}
                 </div>
             {% else %}
