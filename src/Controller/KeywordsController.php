@@ -404,11 +404,12 @@ class KeywordsController implements ControllerProviderInterface
                         $checkTag = $this->_model->checkIfKeywordForArticleExist($data);
 
                         if (!$checkTag) {
-                            $this->_model->connectKeywordWithArticle($data);
                             var_dump($checkTag);
                             var_dump((int)$data['article_id']);
                             var_dump($data['keyword_id']);
                             die();
+                            $this->_model->connectKeywordWithArticle($data);
+
 
                             $app['session']->getFlashBag()->add(
                                 'message', array(
