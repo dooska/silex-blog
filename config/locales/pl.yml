@@ -1,0 +1,49 @@
+hello: Witaj użytkowniku!
+welcome: Witam na moim blogu i zapraszam do przeglądania jego zawartości.
+article_add: Dodaj artykuł
+save: Zapisz
+articles: Artykuły
+article_index: Lista artykułów
+article_view: Zobacz artykuł
+article_title: Tytuł artykułu
+article_delete: Usuń artykuł
+article_edit: Edytuj artykuł
+articles_list: Lista artykułów
+articles_not_found: Nie znaleziono artykułów
+articles_with_keyword: Artykuły ze słowem kluczowym
+title: Tytuł
+category: Kategoria
+category_name: Nazwa kategorii
+category_add: Dodaj kategorię
+category_edit: Edytuj kategorię
+category_view: Zobacz kategorię
+category_delete: Usuń kategorię
+category_delete_?: Usunąć kategorię
+categories: Kategorie
+categories_index: Lista kategorii
+categories_not_found: Nie znaleziono kategorii
+comment_add: Dodaj komentarz
+comment_edit: Edytuj komentarz
+comment_delete: Usuń komentarz
+comment_confirmation: Na pewno chcesz usunąć ten komentarz?
+keyword_add: Dodaj słowo kluczowe
+keyword_edit: Edytuj słowo kluczowe
+keyword_view: Zobacz słowo kluczowe
+keyword_delete: Usuń słowo kluczowe
+keyword_disconnect: Usuń tag
+keywords: Słowa kluczowe
+keywords_index: Lista kategorii
+keywords_not_found: Nie znaleziono słów kluczowych
+keyword_not_exist: Słowo kluczowe nie istnieje
+connection_delete: Usuń powiązanie
+user_delete: Usuń użytkownika
+user_info: Informacje o użytkowniku
+user_view: Profil
+login: Zaloguj się
+id: Id
+action: Akcja
+register: Rejestracja
+can_login: Teraz możesz sie zalogować!
+email: Email
+logout: Wyloguj się
+login: Zaloguj się

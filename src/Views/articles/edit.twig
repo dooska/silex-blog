@@ -1,13 +1,13 @@
 {% extends 'layout.twig' %}
 
-{% block title %}{{  'Edytuj artykuł'|trans }}{% endblock %}
+{% block title %}{{  'article_edit'|trans }}{% endblock %}
 
 {% block content %}
     <h1>
-        {{ 'Edytuj artykuł'|trans }}
+        {{ 'article_edit'|trans }}
     </h1>
     <form action="" method="post">
         {{ form_widget(form) }}
-        <input type="submit" name="submit" class="btn btn-primary" value="{{ 'Save'|trans }}" />
+        <input type="submit" name="submit" class="btn btn-primary" value="{{ 'save'|trans }}" />
     </form>
 {% endblock %}

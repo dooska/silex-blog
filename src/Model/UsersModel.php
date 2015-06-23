@@ -283,37 +283,18 @@ class UsersModel
         return $this->_db->fetchAssoc($sql, array((string) $login));
     }
 
+
+
     /**
      * Changes information about user
      *
-     * @param $id
      * @param $data
-     * @param $password
      */
-    public function updateUser($id, $data, $password)
+    public function removeUser($data)
     {
-        if (isset($id) && ctype_digit((string)$id)) {
-
-//            var_dump($id);
-//            var_dump($data);
-//            var_dump($password);
-//            die();
-            $query = 'UPDATE `users`
-                  SET `login`= ?,
-                      `email`= ?,
-                      `password`= ?,
-                  WHERE `id`= ?';
-
-            $this->_db->executeQuery(
-                $query, array(
-                    $data['login'],
-                    $data['email'],
-                    $password,
-                    $id
-                )
-            );
-        }
-
+        $query = 'DELETE FROM users WHERE id = ?';
+        return $this->_db->executeQuery($query, array((int)($data['id'])));
     }
+
 
 }

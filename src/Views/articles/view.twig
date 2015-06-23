@@ -1,7 +1,7 @@
 {% extends 'layout.twig' %}
 
 {% block content %}
-    <a href="{{ url('articles_index') }}" class="btn btn-default">Powrót do listy artykułów</a>
+    <a href="{{ url('articles_index') }}" class="btn btn-default">{{ 'article_index'|trans }}</a>
     <div class="row">
         <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9">
             {% if article %}
@@ -13,7 +13,8 @@
                     <span>Słowa kluczowe: </span>
                     {% for keyword in keywords %}
                         <strong>{{ keyword.word }}</strong>
-                        <a href="{{ url('disconnect_keyword', {'id': keyword.id}) }}" class="btn btn-danger btn-xs">Usuń tag</a>
+                        <a href="{{ url('disconnect_keyword',{'id': keyword.id}) }}"
+                           class="btn btn-danger btn-xs">{{ 'keyword_disconnect'|trans }}</a>
                     {% endfor %}
                 </div>
             {% else %}
@@ -30,9 +31,9 @@
                     <p>{{ comment.comment_content }}</p>
                     {% if (user is defined and comment.user_id == user.id) or is_granted('ROLE_ADMIN') %}
                         <a href="{{ url('comments_edit', {'id': comment.comment_id}) }}" class="btn btn-warning btn-xs"
-                           title="{{ 'Edit comment'|trans }}">{{ 'Edytuj komentarz'|trans }}</a>
+                           title="{{ 'comment_edit'|trans }}">{{ 'comment_edit'|trans }}</a>
                         <a href="{{ url('comments_delete', {'id': comment.comment_id}) }}" class="btn btn-danger btn-xs"
-                           title="{{ 'Delete comment'|trans }}">{{ 'Usuń komentarz'|trans }}</a>
+                           title="{{ 'comment_delete'|trans }}">{{ 'comment_delete'|trans }}</a>
                     {% endif %}
                 </div>
             {% endfor %}
@@ -42,11 +43,11 @@
         {% if article %}
             <a href="{{ url('comments_add', {'article_id': article.article_id}) }}"
                class="btn btn-success"
-               title="{{ 'Add comment'|trans }}">{{ 'Dodaj komentarz'|trans }}</a>
+               title="{{ 'comment_add'|trans }}">{{ 'comment_add'|trans }}</a>
         {% else %}
             <a href="{{ url('comments_add', {'article_id': app.request.get('article_id')}) }}"
                class="btn btn-success"
-               title="{{ 'Add comment'|trans }}">{{ 'Dodaj komentarz'|trans }}</a>
+               title="{{ 'comment_add'|trans }}">{{ 'comment_add'|trans }}</a>
         {% endif %}
 
     </div>

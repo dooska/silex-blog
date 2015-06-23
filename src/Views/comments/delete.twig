@@ -3,11 +3,11 @@
 {% block content %}
     <hr>
     <h2 class="intro-text text-center">
-        Usuń komentarz
+        {{ 'comment_delete'|trans }}
     </h2>
     <hr>
     <div>
-        <h3>Czy na pewno chcesz usunąć ten komentarz?</h3>
+        <h3>{{ 'comment_confirmation'|trans }}</h3>
 
         <form action="#" method="post">
             {{ form_widget(form) }}

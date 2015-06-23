@@ -65,10 +65,10 @@ class UsersController implements ControllerProviderInterface
         $usersController->match('/edit', array($this, 'editAction'))
             ->bind('users_edit');
         $usersController->match('/edit', array($this, 'editAction'));
-        $usersController->post('/delete/{id}', array($this, 'deleteAction'));
-        $usersController->match('/delete/{id}', array($this, 'deleteAction'))
+        $usersController->post('/delete', array($this, 'deleteAction'));
+        $usersController->match('/delete', array($this, 'deleteAction'))
             ->bind('users_delete');
-        $usersController->match('/delete/{id}/', array($this, 'deleteAction'));
+        $usersController->match('/delete', array($this, 'deleteAction'));
         $usersController->get('/view', array($this, 'viewAction'))
             ->bind('users_view');
         $usersController->get('/view', array($this, 'viewAction'));
@@ -117,165 +117,74 @@ class UsersController implements ControllerProviderInterface
         }
     }
 
-    public function editAction(Application $app, Request $request)
+    public function deleteAction(Application $app, Request $request)
     {
         $currentUser = $this->_model->getCurrentUserInfo($app);
+        $id = (int)$currentUser['id'];
 
 
-        $data = array(
-            'login' => $currentUser['login'],
-            'email' => $currentUser['email'],
-            'password' => '',
-            'confirm_password' => ''
-        );
-        $form = $app['form.factory']->createBuilder('form', $data)
-            ->add(
-                'login', 'text', array(
-                    'label' => 'Login',
-                    'constraints' => array(
-                        new Assert\NotBlank()
+        if (count($currentUser)) {
+            $data = array();
+            $form = $app['form.factory']->createBuilder('form', $data)
+                ->add(
+                    'id', 'hidden', array(
+                        'data' => $id,
                     )
                 )
-            )
-            ->add(
-                'email', 'text', array(
-                    'label' => 'Email',
-                    'constraints' => array(
-                        new Assert\NotBlank(),
-                        new Assert\Email(
-                            array(
-                                'message' => 'Wrong email'
-                            )
-                        )
-                    )
-                )
-            )
-            ->add(
-                'password', 'password', array(
-                    'label' => 'Nowe hasło',
-                    'constraints' => array(
-                        new Assert\NotBlank()
-                    )
-                )
-            )
-            ->add(
-                'confirm_password', 'password', array(
-                    'label' => 'Potwierdź hasło',
-                    'constraints' => array(
-                        new Assert\NotBlank()
-                    )
-                )
-            )
-            ->getForm();
+                ->add('Tak', 'submit')
+                ->add('Nie', 'submit')
+                ->getForm();
 
+            $form->handleRequest($request);
 
-        $form->handleRequest($request);
+            if ($form->isValid()) {
+                if ($form->get('Tak')->isClicked()) {
+                    $data = $form->getData();
 
-        if ($form->isValid()) {
-            $data = $form->getData();
-
-            $data['login'] = $app
-                ->escape($data['login']);
-            $data['email'] = $app
-                ->escape($data['email']);
-            $data['password'] = $app
-                ->escape($data['password']);
-            $data['confirm_password'] = $app
-                ->escape($data['confirm_password']);
-
-            if ($data['password'] === $data['confirm_password']) {
-                $password = $app['security.encoder.digest']
-                    ->encodePassword(
-                        $data['password'], ''
-                    );
-
-
-                $checkLogin = $this->_model
-                    ->getUserByLogin(
-                        $data['login']
-                    );
-
-                if ($data['login'] === $checkLogin ||
-                    !$checkLogin ||
-                    (int)$currentUser['id'] ===(int)$checkLogin['id']) {
-                    try
-                    {
-
-                        $model = $this->_model->updateUser(
-                            (int)$currentUser['id'],
-                            $form->getData(),
-                            $password
-                        );
-                        if($model) {
+                    try {
+                        $this->_model->removeUser($data);
 
                         $app['session']->getFlashBag()->add(
                             'message', array(
                                 'type' => 'success',
-                                'content' => 'Edycja konta udała się,
-                                    możesz się teraz ponownie zalogować'
+                                'content' =>
+                                    'User został usunięty'
                             )
                         );
                         return $app->redirect(
-                            $app['url_generator']
-                                ->generate(
-                                    'users_view'
-                                ), 301
+                            $app['url_generator']->generate(
+                                'articles_index'
+                            ), 301
                         );
-                    } else {
-                            $app['session']->getFlashBag()->add(
-                                'message', array(
-                                    'type' => 'success',
-                                    'content' => 'Edycja konta nie udała się.'
-                                )
-                            );
-                            return $app->redirect(
-                                $app['url_generator']
-                                    ->generate(
-                                        'auth_logout'
-                                    ), 301
-                            );
-                        }
+                    } catch (\Exception $e) {
+                        $errors[] = 'Coś poszło niezgodnie z planem';
                     }
-                    catch (\Exception $e)
-                    {
-                        $errors[] = 'Edycja konta nie powiodła się';
-                    }
-
                 } else {
-                    $app['session']->getFlashBag()->add(
-                        'message', array(
-                            'type' => 'warning',
-                            'content' => 'Login zajęty'
-                        )
-                    );
-                    return $app['twig']->render(
-                        'users/edit.twig', array(
-                            'form' => $form->createView(),
-                            'login' => $currentUser
-                        )
+                    return $app->redirect(
+                        $app['url_generator']->generate(
+                            'articles_index'
+                        ), 301
                     );
                 }
-            } else {
-                $app['session']->getFlashBag()->add(
-                    'message', array(
-                        'type' => 'warning',
-                        'content' => 'Hasła różnią się'
-                    )
-                );
-                return $app['twig']->render(
-                    'users/edit.twig', array(
-                        'form' => $form->createView(),
-                        'login' => $currentUser
-                    )
-                );
-
             }
+            return $app['twig']->render(
+                'users/delete.twig', array(
+                    'form' => $form->createView()
+                )
+            );
+        } else {
+            $app['session']->getFlashBag()->add(
+                'message', array(
+                    'type' => 'danger',
+                    'content' => 'Nie znaleziono użytkownika'
+                )
+            );
+            return $app->redirect(
+                $app['url_generator']->generate(
+                    'users/view.twig'
+                ), 301
+            );
         }
-        return $app['twig']->render(
-            'users/edit.twig', array(
-                'form' => $form->createView(),
-                'login' => $currentUser
-            )
-        );
+
     }
 }

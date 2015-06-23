@@ -1,13 +1,13 @@
 {% extends 'layout.twig' %}
 
-{% block title %}{{  'Dodaj słowo kluczowe'|trans }}{% endblock %}
+{% block title %}{{  'keyword_add'|trans }}{% endblock %}
 
 {% block content %}
     <h1>
-        {{ 'Dodaj słowo kluczowe'|trans }}
+        {{ 'keyword_add'|trans }}
     </h1>
     <form action="{{ url('keywords_add') }}" method="post">
         {{ form_widget(form, { 'attr': {'class': 'form-horizontal'}}) }}
-        <input type="submit" name="submit" class="btn btn-primary" value="{{ 'Save'|trans }}" />
+        <input type="submit" name="submit" class="btn btn-primary" value="{{ 'save'|trans }}" />
     </form>
 {% endblock %}

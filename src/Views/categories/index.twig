@@ -1,6 +1,6 @@
 {% extends 'layout.twig' %}
 
-{% block title %}{{  'Categories list'|trans }}{% endblock %}
+{% block title %}{{  'categories_index'|trans }}{% endblock %}
 
 {% block content %}
     <h1>
@@ -8,8 +8,8 @@
     </h1>
     {% if is_granted('ROLE_ADMIN') %}
         <p>
-            <a href="{{ url('categories_add') }}" class="btn btn-success" title="{{ 'Add category'|trans }}">
-                {{ 'Dodaj kategorię'|trans }}
+            <a href="{{ url('categories_add') }}" class="btn btn-success" title="{{ 'category_add'|trans }}">
+                {{ 'category_add'|trans }}
             </a>
         </p>
     {% endif %}
@@ -31,8 +31,8 @@
         <table class="table">
             <thead>
             <tr>
-                <th>{{ 'Id'|trans }}</th>
-                <th>{{ 'Nazwa kategorii'|trans }}</th>
+                <th>{{ 'id'|trans }}</th>
+                <th>{{ 'category_name'|trans }}</th>
                 <th>{{ ''|trans }}</th>
             </tr>
             </thead>
@@ -42,11 +42,11 @@
                     <td>{{ category.category_id|e }}</td>
                     <td>{{ category.category_name|e }}</td>
                         <td>
-                            <a href="{{ url('categories_view', {'id': category.category_id}) }}"class="btn btn-primary btn-sm" title="{{ 'View category'|trans }}">{{ 'Zobacz artykuły'|trans }}</a>
+                            <a href="{{ url('categories_view', {'id': category.category_id}) }}"class="btn btn-primary btn-sm" title="{{ 'category_view'|trans }}">{{ 'category_view'|trans }}</a>
                             {% if is_granted('ROLE_ADMIN') %}
 
-                            <a href="{{ url('categories_edit', {'id': category.category_id}) }}"class="btn btn-warning btn-sm" title="{{ 'Edit category'|trans }}">{{ 'Edytuj kategorię'|trans }}</a>
-                            <a href="{{ url('categories_delete', {'id': category.category_id}) }}" class="btn btn-danger btn-sm" title="{{ 'Delete category'|trans }}">{{ 'Usuń kategorię'|trans }}</a>
+                            <a href="{{ url('categories_edit', {'id': category.category_id}) }}"class="btn btn-warning btn-sm" title="{{ 'category_edit'|trans }}">{{ 'category_edit'|trans }}</a>
+                            <a href="{{ url('categories_delete', {'id': category.category_id}) }}" class="btn btn-danger btn-sm" title="{{ 'category_delete'|trans }}">{{ 'category_delete'|trans }}</a>
                         </td>
                     {% endif %}
                 </tr>
@@ -55,7 +55,7 @@
         </table>
     {% else %}
         <div class="alert alert-danger" role="alert">
-            {{ 'Categories not found'|trans }}.
+            {{ 'categories_not_found'|trans }}.
         </div>
     {% endif %}
 {% endblock %}

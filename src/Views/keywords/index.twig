@@ -1,15 +1,15 @@
 {% extends 'layout.twig' %}
 
-{% block title %}{{  'Keywords list'|trans }}{% endblock %}
+{% block title %}{{  'keywords_index'|trans }}{% endblock %}
 
 {% block content %}
     <h1>
-        {{ 'Lista słów kluczowych'|trans }}
+        {{ 'keywords_index'|trans }}
     </h1>
     {% if is_granted('ROLE_ADMIN') %}
         <p>
-            <a href="{{ url('keywords_add') }}" class="btn btn-success" title="{{ 'Add keyword'|trans }}">
-                {{ 'Dodaj słowo kluczowe'|trans }}
+            <a href="{{ url('keywords_add') }}" class="btn btn-success" title="{{ 'keyword_add'|trans }}">
+                {{ 'keyword_add'|trans }}
             </a>
         </p>
     {% endif %}
@@ -31,8 +31,8 @@
         <table class="table">
             <thead>
             <tr>
-                <th>{{ 'Id'|trans }}</th>
-                <th>{{ 'Tytuł'|trans }}</th>
+                <th>{{ 'id'|trans }}</th>
+                <th>{{ 'title'|trans }}</th>
                 <th>{{ ''|trans }}</th>
             </tr>
             </thead>
@@ -42,10 +42,10 @@
                     <td>{{ keyword.keyword_id|e }}</td>
                     <td>{{ keyword.word|e }}</td>
                     <td>
-                        <a href="{{ url('keywords_view', {'id': keyword.keyword_id}) }}" class="btn btn-primary btn-sm" title="{{ 'View articles'|trans }}">{{ 'Zobacz artykuły'|trans }}</a>
+                        <a href="{{ url('keywords_view', {'id': keyword.keyword_id}) }}" class="btn btn-primary btn-sm" title="{{ 'article_view'|trans }}">{{ 'article_view'|trans }}</a>
                         {% if is_granted('ROLE_ADMIN') %}
-                            <a href="{{ url('keywords_edit', {'id': keyword.keyword_id}) }}" class="btn btn-warning btn-sm" title="{{ 'Edit keyword'|trans }}">{{ 'Edytuj słowo kluczowe'|trans }}</a>
-                            <a href="{{ url('keywords_delete', {'id': keyword.keyword_id}) }}" class="btn btn-danger btn-sm" title="{{ 'Delete keyword'|trans }}">{{ 'Usuń słowo kluczowe'|trans }}</a>
+                            <a href="{{ url('keywords_edit', {'id': keyword.keyword_id}) }}" class="btn btn-warning btn-sm" title="{{ 'keyword_edit'|trans }}">{{ 'keyword_edit'|trans }}</a>
+                            <a href="{{ url('keywords_delete', {'id': keyword.keyword_id}) }}" class="btn btn-danger btn-sm" title="{{ 'keyword_delete'|trans }}">{{ 'keyword_delete'|trans }}</a>
                         {% endif %}
                     </td>
                 </tr>
@@ -54,7 +54,7 @@
         </table>
     {% else %}
         <div class="alert alert-danger" role="alert">
-            {{ 'Keywords not found'|trans }}.
+            {{ 'keywords_not_found'|trans }}.
         </div>
     {% endif %}
 {% endblock %}

@@ -3,14 +3,14 @@
 {% block content %}
     <div class="row">
         <div class="back-button">
-            <a href="{{ url('keywords_index') }}" class="btn btn-default">Powrót do listy słów kluczowych</a>
+            <a href="{{ url('keywords_index') }}" class="btn btn-default">{{ 'keywords_index'|trans }}</a>
         </div>
 
         <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9">
             {% if keyword %}
-                <h2>Posty ze słowem kluczowym {{ keyword.word }}</h2>
+                <h2>{{ 'articles_with_keyword'|trans }} {{ keyword.word }}</h2>
             {% else %}
-                <p>Słowo kluczowe nie istnieje</p>
+                <p>{{ 'keyword_not_exist'|trans }}</p>
             {% endif %}
         </div>
     </div>
@@ -20,8 +20,8 @@
                 <table class="table">
                     <thead>
                     <th>Id</th>
-                    <th>Tytuł posta</th>
-                    <th>Akcja</th>
+                    <th>{{ 'article_title'|trans }}</th>
+                    <th>{{ 'action'|trans }}</th>
                     </thead>
                 {% for article in keyword_articles %}
                     <tr>
@@ -29,7 +29,7 @@
                         <td>{{ article.title }}</td>
                         <td><a href="{{ url('articles_view',
                             {'id': article.article_id}) }}"
-                               class="btn btn-primary">Pokaż
+                               class="btn btn-primary">{{ 'keyword_view'|trans }}
                             </a>
                         </td>
                     </tr>
@@ -37,7 +37,7 @@
                 </table>
 
             {% else %}
-                <p>Posty z danym słowem kluczowym nie istnieją</p>
+                <p>{{ 'articles_not_found'|trans }}</p>
             {% endif %}
         </div>
     </div>

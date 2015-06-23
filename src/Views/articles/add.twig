@@ -1,13 +1,13 @@
 {% extends 'layout.twig' %}
 
-{% block title %}{{  'Dodaj artykuł'|trans }}{% endblock %}
+{% block title %}{{  'article_add'|trans }}{% endblock %}
 
 {% block content %}
     <h1>
-        {{ 'Dodaj artykuł'|trans }}
+        {{ 'article_add'|trans }}
     </h1>
     <form action="{{ url('articles_add') }}" method="post">
         {{ form_widget(form) }}
-        <input type="submit" name="submit" class="btn btn-primary" value="{{ 'Save'|trans }}" />
+        <input type="submit" name="submit" class="btn btn-primary" value="{{ 'save'|trans }}" />
     </form>
 {% endblock %}
