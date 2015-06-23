@@ -224,7 +224,7 @@ class KeywordsModel
 
     public function connectKeywordWithArticle($data)
     {
-        $query = 'INSERT INTO `silex-blog`.`article_keywords` (`article_id`, `keyword_id`) VALUES (?, ?)';
+        $query = 'INSERT INTO `article_keywords` (`article_id`, `keyword_id`) VALUES (?, ?)';
         $result = $this->_db->executeQuery($query, array((int)$data['article_id'], (int)$data['keyword_id']));
         return $result;
     }
