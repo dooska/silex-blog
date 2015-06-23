@@ -13,8 +13,10 @@
                     <span>Słowa kluczowe: </span>
                     {% for keyword in keywords %}
                         <strong>{{ keyword.word }}</strong>
-                        <a href="{{ url('disconnect_keyword',{'id': keyword.id}) }}"
-                           class="btn btn-danger btn-xs">{{ 'keyword_disconnect'|trans }}</a>
+                        {%  if is_granted('ROLE_ADMIN') %}
+                            <a href="{{ url('disconnect_keyword',{'id': keyword.id}) }}"
+                               class="btn btn-danger btn-xs">{{ 'keyword_disconnect'|trans }}</a>
+                        {% endif %}
                     {% endfor %}
                 </div>
             {% else %}

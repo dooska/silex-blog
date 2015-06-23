@@ -42,7 +42,7 @@
                     <td>{{ keyword.keyword_id|e }}</td>
                     <td>{{ keyword.word|e }}</td>
                     <td>
-                        <a href="{{ url('keywords_view', {'id': keyword.keyword_id}) }}" class="btn btn-primary btn-sm" title="{{ 'article_view'|trans }}">{{ 'article_view'|trans }}</a>
+                        <a href="{{ url('keywords_view', {'id': keyword.keyword_id}) }}" class="btn btn-primary btn-sm" title="{{ 'articles_view'|trans }}">{{ 'articles_view'|trans }}</a>
                         {% if is_granted('ROLE_ADMIN') %}
                             <a href="{{ url('keywords_edit', {'id': keyword.keyword_id}) }}" class="btn btn-warning btn-sm" title="{{ 'keyword_edit'|trans }}">{{ 'keyword_edit'|trans }}</a>
                             <a href="{{ url('keywords_delete', {'id': keyword.keyword_id}) }}" class="btn btn-danger btn-sm" title="{{ 'keyword_delete'|trans }}">{{ 'keyword_delete'|trans }}</a>

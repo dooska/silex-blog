@@ -5,6 +5,7 @@ save: Zapisz
 articles: Artykuły
 article_index: Lista artykułów
 article_view: Zobacz artykuł
+articles_view: Zobacz artykuły
 article_title: Tytuł artykułu
 article_delete: Usuń artykuł
 article_edit: Edytuj artykuł
@@ -32,7 +33,7 @@ keyword_view: Zobacz słowo kluczowe
 keyword_delete: Usuń słowo kluczowe
 keyword_disconnect: Usuń tag
 keywords: Słowa kluczowe
-keywords_index: Lista kategorii
+keywords_index: Lista słów kluczowych
 keywords_not_found: Nie znaleziono słów kluczowych
 keyword_not_exist: Słowo kluczowe nie istnieje
 connection_delete: Usuń powiązanie

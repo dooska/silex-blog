@@ -100,7 +100,7 @@ class KeywordsController implements ControllerProviderInterface
      */
     public function indexAction(Application $app, Request $request)
     {
-        $pageLimit = 3;
+        $pageLimit = 10;
         $page = (int)$request->get('page', 1);
         try {
             $pagesCount = $this->_model->countKeywordsPages($pageLimit);
