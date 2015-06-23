@@ -89,12 +89,15 @@ class CategoriesController implements ControllerProviderInterface
      */
     public function indexAction(Application $app, Request $request)
     {
-        $pageLimit = 3;
+        $pageLimit = 10;
         $page = (int) $request->get('page', 1);
-        $categoriesModel = new CategoriesModel($app);
-        $pagesCount = $categoriesModel->countCategoriesPages($pageLimit);
-        $page = $categoriesModel->getCurrentPageNumber($page, $pagesCount);
-        $categories = $categoriesModel->getCategoriesPage($page, $pageLimit);
+        try {
+            $pagesCount = $this->_model->countCategoriesPages($pageLimit);
+            $page = $this->_model->getCurrentPageNumber($page, $pagesCount);
+            $categories = $this->_model->getCategoriesPage($page, $pageLimit);
+        } catch (\PDOException $e) {
+            $app->abort(404, $app['translator']->trans('Categories not exists'));
+        }
         $this->view['paginator']
             = array('page' => $page, 'pagesCount' => $pagesCount);
         $this->view['categories'] = $categories;
@@ -112,9 +115,12 @@ class CategoriesController implements ControllerProviderInterface
     public function viewAction(Application $app, Request $request)
     {
         $id = (int)$request->get('id', null);
-        $categoriesModel = new CategoriesModel($app);
-        $this->view['category'] = $categoriesModel->getCategory($id);
-        $this->view['category_articles'] = $categoriesModel->getCategoryArticles($id);
+        try {
+            $this->view['category'] = $this->_model->getCategory($id);
+            $this->view['category_articles'] = $this->_model->getCategoryArticles($id);
+        } catch (\PDOException $e) {
+            $app->abort(404, $app['translator']->trans('Category not found'));
+        }
         return $app['twig']->render('categories/view.twig', $this->view);
     }
 
@@ -150,9 +156,13 @@ class CategoriesController implements ControllerProviderInterface
             $form->handleRequest($request);
 
             if ($form->isValid()) {
-                $data = $form->getData();
-                $categoriesModel = new CategoriesModel($app);
-                $categoriesModel->saveCategory($data);
+                try {
+                    $data = $form->getData();
+                    $categoriesModel = new CategoriesModel($app);
+                    $categoriesModel->saveCategory($data);
+                } catch (\PDOException $e) {
+                    $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                }
                 $app['session']->getFlashBag()->add(
                     'message', array(
                         'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nową kategorię.')
@@ -192,9 +202,8 @@ class CategoriesController implements ControllerProviderInterface
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
 
-            $categoriesModel = new CategoriesModel($app);
             $id = (int) $request->get('id', 0);
-            $category = $categoriesModel->getCategory($id);
+            $category = $this->_model->getCategory($id);
 
             if (count($category)) {
 
@@ -206,7 +215,7 @@ class CategoriesController implements ControllerProviderInterface
                             'constraints' => array(
                                 new Assert\NotBlank(),
                                 new Assert\Type(array('type' => 'digit'))
-                            )
+                            ),
                         )
                     )
                     ->add(
@@ -215,6 +224,9 @@ class CategoriesController implements ControllerProviderInterface
                             'constraints' => array(
                                 new Assert\NotBlank(),
                                 new Assert\Length(array('min' => 3))
+                            ),
+                            'attr' => array(
+                                'class' => 'form-control'
                             )
                         )
                     )
@@ -222,9 +234,12 @@ class CategoriesController implements ControllerProviderInterface
                 $form->handleRequest($request);
 
                 if ($form->isValid()) {
-                    $data = $form->getData();
-                    $categoriesModel = new CategoriesModel($app);
-                    $categoriesModel->saveCategory($data);
+                    try {
+                        $data = $form->getData();
+                        $this->_model->saveCategory($data);
+                    } catch (\PDOException $e) {
+                        $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                    }
                     $app['session']->getFlashBag()->add(
                         'message', array(
                             'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś wpis.')
@@ -306,8 +321,8 @@ class CategoriesController implements ControllerProviderInterface
                                     'categories_index'
                                 ), 301
                             );
-                        } catch (\Exception $e) {
-                            $errors[] = 'Coś poszło niezgodnie z planem';
+                        } catch (\PDOException $e) {
+                            $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
                         }
                     } else {
                         return $app->redirect(

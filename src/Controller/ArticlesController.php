@@ -110,7 +110,7 @@ class ArticlesController implements ControllerProviderInterface
                 = array('page' => $page, 'pagesCount' => $pagesCount);
             $this->view['articles'] = $articles;
         } catch (\PDOException $e){
-            $app->abort(404, $app['translator']->trans('Album not found'));
+            $app->abort(404, $app['translator']->trans('Articles not found'));
         }
         return $app['twig']->render('articles/index.twig', $this->view);
     }
@@ -152,7 +152,7 @@ class ArticlesController implements ControllerProviderInterface
     public function addAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
-            // default values:
+
             $data = array(
                 'title' => 'Title',
                 'content' => 'Content',
@@ -202,9 +202,13 @@ class ArticlesController implements ControllerProviderInterface
 
             if ($form->isValid()) {
 
-                $data = $form->getData();
-                $articlesModel = new ArticlesModel($app);
-                $articlesModel->saveArticle($data);
+                try {
+                    $data = $form->getData();
+                    $this->_model->saveArticle($data);
+
+                } catch (\PDOException $e) {
+                    $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                }
                 $app['session']->getFlashBag()->add(
                     'message', array(
                         'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nowy wpis.')
@@ -214,6 +218,7 @@ class ArticlesController implements ControllerProviderInterface
                     $app['url_generator']->generate('articles_index'),
                     301
                 );
+
             }
 
             $this->view['form'] = $form->createView();
@@ -260,6 +265,9 @@ class ArticlesController implements ControllerProviderInterface
                             'constraints' => array(
                                 new Assert\NotBlank(),
                                 new Assert\Type(array('type' => 'digit'))
+                            ),
+                            'attr' => array(
+                                'class' => 'form-control'
                             )
                         )
                     )
@@ -269,6 +277,9 @@ class ArticlesController implements ControllerProviderInterface
                             'constraints' => array(
                                 new Assert\NotBlank(),
                                 new Assert\Length(array('min' => 5))
+                            ),
+                            'attr' => array(
+                                'class' => 'form-control'
                             )
                         )
                     )
@@ -278,6 +289,9 @@ class ArticlesController implements ControllerProviderInterface
                             'constraints' => array(
                                 new Assert\NotBlank(),
                                 new Assert\Length(array('min' => 5))
+                            ),
+                            'attr' => array(
+                                'class' => 'form-control'
                             )
                         )
                     )
@@ -297,9 +311,13 @@ class ArticlesController implements ControllerProviderInterface
                 $form->handleRequest($request);
 
                 if ($form->isValid()) {
-                    $data = $form->getData();
-                    $articlesModel = new ArticlesModel($app);
-                    $articlesModel->saveArticle($data);
+                    try {
+                        $data = $form->getData();
+                        $articlesModel = new ArticlesModel($app);
+                        $articlesModel->saveArticle($data);
+                    } catch (\PDOException $e) {
+                        $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                    }
                     $app['session']->getFlashBag()->add(
                         'message', array(
                             'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś wpis.')

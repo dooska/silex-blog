@@ -93,9 +93,9 @@ class CommentsController implements ControllerProviderInterface
         $commentsController->get('/view/{id}', array($this, 'viewAction'))
             ->bind('comments_view');
         $commentsController->get('/view/{id}/', array($this, 'viewAction'));
-        $commentsController->get('/index', array($this, 'indexAction'));
-        $commentsController->get('/index/', array($this, 'indexAction'))
-            ->bind('comments_index');;
+//        $commentsController->get('/index', array($this, 'indexAction'));
+//        $commentsController->get('/index/', array($this, 'indexAction'))
+//            ->bind('comments_index');
 //        $commentsController->get('/{page}', array($this, 'indexAction'))
 //            ->value('page', 1)->bind('comments_index');
         return $commentsController;
@@ -111,7 +111,7 @@ class CommentsController implements ControllerProviderInterface
      * @return \Symfony\Component\HttpFoundation\RedirectResponse Redirect.
      * @return mixed Generates page.
      */
-    public function indexAction(Application $app, Request $request)
+ /*   public function indexAction(Application $app, Request $request)
     {
         $id = (int)$request->get('article_id', 0);
 
@@ -146,7 +146,7 @@ class CommentsController implements ControllerProviderInterface
                 ), 301
             );
         }
-    }
+    }*/
 
     public function addAction(Application $app, Request $request)
     {
@@ -190,8 +190,8 @@ class CommentsController implements ControllerProviderInterface
                                 'articles_view', array('id' => $data['article_id'])
                             ), 301
                         );
-                    } catch (\Exception $e) {
-                        $errors[] = 'Coś poszło niezgodnie z planem';
+                    } catch (\PDOException $e) {
+                        $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
                     }
                 }
                 return $app['twig']->render(
@@ -241,7 +241,6 @@ class CommentsController implements ControllerProviderInterface
     {
         if ($app['security']->isGranted('ROLE_USER')) {
 
-
             $id = (int)$request->get('id', 0);
 
             $check = $this->_model->checkCommentId($id);
@@ -275,8 +274,8 @@ class CommentsController implements ControllerProviderInterface
                                     'articles_view', array('id' => $comment['article_id'])
                                 ), 301
                             );
-                        } catch (Exception $e) {
-                            $errors[] = 'Coś poszło niezgodnie z planem';
+                        } catch (\PDOException $e) {
+                            $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
                         }
                     }
                     return $app['twig']->render(
@@ -378,8 +377,8 @@ class CommentsController implements ControllerProviderInterface
                                         'articles_view', array('id' => $comment['article_id'])
                                     ), 301
                                 );
-                            } catch (\Exception $e) {
-                                $errors[] = 'Coś poszło niezgodnie z planem';
+                            } catch (\PDOException $e) {
+                                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
                             }
                         } else {
                             return $app->redirect(

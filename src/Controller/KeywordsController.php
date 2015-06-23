@@ -18,6 +18,7 @@ use Form\DeleteConnectionForm;
 use Silex\Application;
 use Silex\ControllerProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\Constraints as Assert;
 use Model\KeywordsModel;
 use Model\ArticlesModel;
 use Form\KeywordAddForm;
@@ -101,9 +102,13 @@ class KeywordsController implements ControllerProviderInterface
     {
         $pageLimit = 3;
         $page = (int)$request->get('page', 1);
-        $pagesCount = $this->_model->countKeywordsPages($pageLimit);
-        $page = $this->_model->getCurrentPageNumber($page, $pagesCount);
-        $keywords = $this->_model->getKeywordsPage($page, $pageLimit);
+        try {
+            $pagesCount = $this->_model->countKeywordsPages($pageLimit);
+            $page = $this->_model->getCurrentPageNumber($page, $pagesCount);
+            $keywords = $this->_model->getKeywordsPage($page, $pageLimit);
+        } catch (\PDOException $e) {
+            $app->abort(404, $app['translator']->trans('An error occurred, please try again later'));
+        }
         $this->view['paginator']
             = array('page' => $page, 'pagesCount' => $pagesCount);
         $this->view['keywords'] = $keywords;
@@ -121,8 +126,12 @@ class KeywordsController implements ControllerProviderInterface
     public function viewAction(Application $app, Request $request)
     {
         $id = (int)$request->get('id', null);
-        $this->view['keyword'] = $this->_model->getKeyword($id);
-        $this->view['keyword_articles'] = $this->_model->getKeywordArticles($id);
+        try {
+            $this->view['keyword'] = $this->_model->getKeyword($id);
+            $this->view['keyword_articles'] = $this->_model->getKeywordArticles($id);
+        } catch (\PDOException $e) {
+            $app->abort(404, $app['translator']->trans('An error occurred, please try again later'));
+        }
         return $app['twig']->render('keywords/view.twig', $this->view);
     }
 
@@ -174,8 +183,8 @@ class KeywordsController implements ControllerProviderInterface
                             301
                         );
                     }
-                } catch (\Exception $e) {
-                    $errors[] = 'Coś poszło niezgodnie z planem';
+                } catch (\PDOException $e) {
+                    $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
                 }
             }
 
@@ -232,6 +241,9 @@ class KeywordsController implements ControllerProviderInterface
                             'constraints' => array(
                                 new Assert\NotBlank(),
                                 new Assert\Length(array('min' => 3))
+                            ),
+                            'attr' => array(
+                                'class' => 'form-control'
                             )
                         )
                     )
@@ -239,12 +251,15 @@ class KeywordsController implements ControllerProviderInterface
                 $form->handleRequest($request);
 
                 if ($form->isValid()) {
-                    $data = $form->getData();
-                    $keywordsModel = new KeywordsModel($app);
-                    $keywordsModel->saveKeyword($data);
+                    try {
+                        $data = $form->getData();
+                        $this->_model->saveKeyword($data);
+                    } catch (\PDOException $e) {
+                        $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                    }
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś wpis.')
+                            'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś słowo kluczowe.')
                         )
                     );
                     return $app->redirect(
@@ -307,9 +322,8 @@ class KeywordsController implements ControllerProviderInterface
 
                 if ($form->isValid()) {
                     if ($form->get('Tak')->isClicked()) {
-                        $data = $form->getData();
-
                         try {
+                            $data = $form->getData();
                             $this->_model->removeKeyword($data);
 
                             $app['session']->getFlashBag()->add(
@@ -384,35 +398,39 @@ class KeywordsController implements ControllerProviderInterface
                 $form->handleRequest($request);
 
                 if ($form->isValid()) {
-                    $data = $form->getData();
+                    try {
+                        $data = $form->getData();
 
-                    $checkTag = $this->_model->checkIfKeywordForArticleExist($data);
-                    if (!$checkTag) {
-                        $this->_model->connectKeywordWithArticle($data);
+                        $checkTag = $this->_model->checkIfKeywordForArticleExist($data);
+                        if (!$checkTag) {
+                            $this->_model->connectKeywordWithArticle($data);
 
-                        $app['session']->getFlashBag()->add(
-                            'message', array(
-                                'type' => 'success',
-                                'content' => 'Słowo kluczowe zostało dodane'
-                            )
-                        );
-                        return $app->redirect(
-                            $app['url_generator']->generate(
-                                'articles_view', array('id' => $article_id)
-                            ), 301
-                        );
-                    } else {
-                        $app['session']->getFlashBag()->add(
-                            'message', array(
-                                'type' => 'danger',
-                                'content' => 'Słowo kluczowe jest już przypisane'
-                            )
-                        );
-                        return $app->redirect(
-                            $app['url_generator']->generate(
-                                'articles_index'
-                            ), 301
-                        );
+                            $app['session']->getFlashBag()->add(
+                                'message', array(
+                                    'type' => 'success',
+                                    'content' => 'Słowo kluczowe zostało dodane'
+                                )
+                            );
+                            return $app->redirect(
+                                $app['url_generator']->generate(
+                                    'articles_view', array('id' => $article_id)
+                                ), 301
+                            );
+                        } else {
+                            $app['session']->getFlashBag()->add(
+                                'message', array(
+                                    'type' => 'danger',
+                                    'content' => 'Słowo kluczowe jest już przypisane'
+                                )
+                            );
+                            return $app->redirect(
+                                $app['url_generator']->generate(
+                                    'articles_index'
+                                ), 301
+                            );
+                        }
+                    } catch (\PDOException $e){
+                        $app->abort(404, $app['translator']->trans('Articles not found'));
                     }
                 }
                 return $app['twig']->render('keywords/connect.twig', array(
@@ -482,8 +500,8 @@ class KeywordsController implements ControllerProviderInterface
                                     'articles_view',array('id' => (int)$article_id)
                                 ), 301
                             );
-                        } catch (\Exception $e) {
-                            $errors[] = 'Coś poszło niezgodnie z planem';
+                        } catch (\PDOException $e){
+                            $app->abort(404, $app['translator']->trans('Articles not found'));
                         }
                     } else {
                         return $app->redirect(
