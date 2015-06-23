@@ -215,9 +215,6 @@ class KeywordsModel
 
     public function checkIfKeywordForArticleExist($data)
     {
-        var_dump((int)$data['article_id']);
-        var_dump($data['keyword_id']);
-        die();
         $query = 'SELECT article_id, keyword_id
                   FROM `article_keywords`
                   WHERE `article_id` = ? AND `keyword_id` = ?';

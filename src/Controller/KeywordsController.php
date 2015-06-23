@@ -402,8 +402,13 @@ class KeywordsController implements ControllerProviderInterface
                         $data = $form->getData();
 
                         $checkTag = $this->_model->checkIfKeywordForArticleExist($data);
+
                         if (!$checkTag) {
                             $this->_model->connectKeywordWithArticle($data);
+                            var_dump($checkTag);
+                            var_dump((int)$data['article_id']);
+                            var_dump($data['keyword_id']);
+                            die();
 
                             $app['session']->getFlashBag()->add(
                                 'message', array(
@@ -441,7 +446,6 @@ class KeywordsController implements ControllerProviderInterface
             }  else {
                 $app['session']->getFlashBag()->add(
                     'message', array(
-
                         'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
                     )
                 );
