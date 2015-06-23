@@ -1,5 +1,6 @@
 <?php
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Translation\Loader\YamlFileLoader;
 
 require_once dirname(dirname(__FILE__)) . '/vendor/autoload.php';
 
@@ -85,12 +86,33 @@ $app->register(
 
 // Errors
 $app->error(
-    function (\Exception $e, $code) use ($app) {
-        if ($code == 404) {
-            return new Response(
-                $app['twig']->render('404.twig'), 404
-            );
+    function (
+        \Exception $e, $code
+    ) use ($app) {
+
+        if ($e instanceof Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            $code = (string)$e->getStatusCode();
         }
+
+        if ($app['debug']) {
+            return;
+        }
+
+        // 404.html, or 40x.html, or 4xx.html, or error.html
+        $templates = array(
+            'errors/'.$code.'.twig',
+            'errors/'.substr($code, 0, 2).'x.twig',
+            'errors/'.substr($code, 0, 1).'xx.twig',
+            'errors/default.twig',
+        );
+
+        return new Response(
+            $app['twig']->resolveTemplate($templates)->render(
+                array('code' => $code)
+            ),
+            $code
+        );
+
     }
 );
 
@@ -99,6 +121,20 @@ $app->register(new Silex\Provider\SessionServiceProvider());
 
 /* URLs */
 $app->register(new Silex\Provider\UrlGeneratorServiceProvider());
+
+/* Translation */
+$app->register(
+    new Silex\Provider\TranslationServiceProvider(), array(
+        'locale' => 'pl',
+        'locale_fallbacks' => array('pl'),
+    )
+);
+
+$app['translator'] = $app->share($app->extend('translator', function($translator, $app) {
+    $translator->addLoader('yaml', new YamlFileLoader());
+    $translator->addResource('yaml', dirname(dirname(__FILE__)) . '/config/locales/pl.yml', 'pl');
+    return $translator;
+}));
 
 /* Routing */
 $app->mount('/', new Controller\IndexController());
