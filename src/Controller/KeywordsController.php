@@ -100,18 +100,21 @@ class KeywordsController implements ControllerProviderInterface
      */
     public function indexAction(Application $app, Request $request)
     {
-        $pageLimit = 10;
-        $page = (int)$request->get('page', 1);
         try {
+            $pageLimit = 10;
+            $page = (int)$request->get('page', 1);
+
             $pagesCount = $this->_model->countKeywordsPages($pageLimit);
             $page = $this->_model->getCurrentPageNumber($page, $pagesCount);
             $keywords = $this->_model->getKeywordsPage($page, $pageLimit);
+
+            $this->view['paginator']
+                = array('page' => $page, 'pagesCount' => $pagesCount);
+            $this->view['keywords'] = $keywords;
         } catch (\PDOException $e) {
-            $app->abort(404, $app['translator']->trans('An error occurred, please try again later'));
+            $app->abort(404, $app['translator']
+                ->trans('An error occurred, please try again later'));
         }
-        $this->view['paginator']
-            = array('page' => $page, 'pagesCount' => $pagesCount);
-        $this->view['keywords'] = $keywords;
         return $app['twig']->render('keywords/index.twig', $this->view);
     }
 
@@ -125,12 +128,13 @@ class KeywordsController implements ControllerProviderInterface
      */
     public function viewAction(Application $app, Request $request)
     {
-        $id = (int)$request->get('id', null);
         try {
+            $id = (int)$request->get('id', null);
             $this->view['keyword'] = $this->_model->getKeyword($id);
             $this->view['keyword_articles'] = $this->_model->getKeywordArticles($id);
         } catch (\PDOException $e) {
-            $app->abort(404, $app['translator']->trans('An error occurred, please try again later'));
+            $app->abort(404, $app['translator']
+                ->trans('An error occurred, please try again later'));
         }
         return $app['twig']->render('keywords/view.twig', $this->view);
     }
@@ -149,16 +153,16 @@ class KeywordsController implements ControllerProviderInterface
         if ($app['security']->isGranted('ROLE_ADMIN')) {
 
             // default values:
+            try {
+                $form = $app['form.factory']->createBuilder(
+                    new KeywordAddForm(), array())
+                    ->getForm();
 
-            $form = $app['form.factory']->createBuilder(
-                new KeywordAddForm(), array())
-                ->getForm();
+                $form->handleRequest($request);
 
-            $form->handleRequest($request);
+                if ($form->isValid()) {
+                    $data = $form->getData();
 
-            if ($form->isValid()) {
-                $data = $form->getData();
-                try {
                     $check = $this->_model->checkIfKeywordExists($data);
                     if(!$check) {
                         $this->_model->saveKeyword($data);
@@ -183,11 +187,11 @@ class KeywordsController implements ControllerProviderInterface
                             301
                         );
                     }
-                } catch (\PDOException $e) {
-                    $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
-                }
-            }
 
+                }
+            } catch (\PDOException $e) {
+                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+            }
             $this->view['form'] = $form->createView();
 
             return $app['twig']->render('keywords/add.twig', $this->view);
@@ -216,73 +220,74 @@ class KeywordsController implements ControllerProviderInterface
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
 
+            try {
 
 
-            $keywordsModel = new KeywordsModel($app);
-            $id = (int)$request->get('id', 0);
-            $keyword = $keywordsModel->getKeyword($id);
+                $keywordsModel = new KeywordsModel($app);
+                $id = (int)$request->get('id', 0);
+                $keyword = $keywordsModel->getKeyword($id);
 
-            if (count($keyword)) {
+                if (count($keyword)) {
 
-                $form = $app['form.factory']->createBuilder('form', $keyword)
-                    ->add(
-                        'id', 'hidden',
-                        array(
-                            'data' => $id,
-                            'constraints' => array(
-                                new Assert\NotBlank(),
-                                new Assert\Type(array('type' => 'digit'))
+                    $form = $app['form.factory']->createBuilder('form', $keyword)
+                        ->add(
+                            'id', 'hidden',
+                            array(
+                                'data' => $id,
+                                'constraints' => array(
+                                    new Assert\NotBlank(),
+                                    new Assert\Type(array('type' => 'digit'))
+                                )
                             )
                         )
-                    )
-                    ->add(
-                        'word', 'text',
-                        array(
-                            'constraints' => array(
-                                new Assert\NotBlank(),
-                                new Assert\Length(array('min' => 3))
-                            ),
-                            'attr' => array(
-                                'class' => 'form-control'
+                        ->add(
+                            'word', 'text',
+                            array(
+                                'constraints' => array(
+                                    new Assert\NotBlank(),
+                                    new Assert\Length(array('min' => 3))
+                                ),
+                                'attr' => array(
+                                    'class' => 'form-control'
+                                )
                             )
                         )
-                    )
-                    ->getForm();
-                $form->handleRequest($request);
+                        ->getForm();
+                    $form->handleRequest($request);
 
-                if ($form->isValid()) {
-                    try {
+                    if ($form->isValid()) {
                         $data = $form->getData();
                         $this->_model->saveKeyword($data);
-                    } catch (\PDOException $e) {
-                        $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+
+                        $app['session']->getFlashBag()->add(
+                            'message', array(
+                                'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś słowo kluczowe.')
+                            )
+                        );
+                        return $app->redirect(
+                            $app['url_generator']->generate('keywords_index'),
+                            301
+                        );
                     }
+
+                    $this->view['id'] = $id;
+                    $this->view['form'] = $form->createView();
+
+                } else {
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś słowo kluczowe.')
+                            'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
                         )
                     );
+
                     return $app->redirect(
                         $app['url_generator']->generate('keywords_index'),
                         301
                     );
                 }
-
-                $this->view['id'] = $id;
-                $this->view['form'] = $form->createView();
-
-            } else {
-                $app['session']->getFlashBag()->add(
-                    'message', array(
-                        'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
-                    )
-                );
-                return $app->redirect(
-                    $app['url_generator']->generate('keywords_index'),
-                    301
-                );
+            } catch (\PDOException $e) {
+                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
             }
-
             return $app['twig']->render('keywords/edit.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
@@ -300,29 +305,28 @@ class KeywordsController implements ControllerProviderInterface
     public function deleteAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
+            try {
 
+                $keywordsModel = new KeywordsModel($app);
+                $id = (int)$request->get('id', 0);
+                $keyword = $keywordsModel->getKeyword($id);
 
-            $keywordsModel = new KeywordsModel($app);
-            $id = (int)$request->get('id', 0);
-            $keyword = $keywordsModel->getKeyword($id);
-
-            if (count($keyword)) {
-                $data = array();
-                $form = $app['form.factory']->createBuilder('form', $data)
-                    ->add(
-                        'id', 'hidden', array(
-                            'data' => $id,
+                if (count($keyword)) {
+                    $data = array();
+                    $form = $app['form.factory']->createBuilder('form', $data)
+                        ->add(
+                            'id', 'hidden', array(
+                                'data' => $id,
+                            )
                         )
-                    )
-                    ->add('Tak', 'submit')
-                    ->add('Nie', 'submit')
-                    ->getForm();
+                        ->add('Tak', 'submit')
+                        ->add('Nie', 'submit')
+                        ->getForm();
 
-                $form->handleRequest($request);
+                    $form->handleRequest($request);
 
-                if ($form->isValid()) {
-                    if ($form->get('Tak')->isClicked()) {
-                        try {
+                    if ($form->isValid()) {
+                        if ($form->get('Tak')->isClicked()) {
                             $data = $form->getData();
                             $this->_model->removeKeyword($data);
 
@@ -338,33 +342,34 @@ class KeywordsController implements ControllerProviderInterface
                                     'keywords_index'
                                 ), 301
                             );
-                        } catch (\Exception $e) {
-                            $errors[] = 'Coś poszło niezgodnie z planem';
+
+                        } else {
+                            return $app->redirect(
+                                $app['url_generator']->generate(
+                                    'keywords_index'
+                                ), 301
+                            );
                         }
-                    } else {
-                        return $app->redirect(
-                            $app['url_generator']->generate(
-                                'keywords_index'
-                            ), 301
-                        );
                     }
+
+                    $this->view['id'] = $id;
+                    $this->view['form'] = $form->createView();
+
+                } else {
+                    $app['session']->getFlashBag()->add(
+                        'message', array(
+                            'type' => 'danger',
+                            'content' => 'Nie znaleziono postu'
+                        )
+                    );
+                    return $app->redirect(
+                        $app['url_generator']->generate(
+                            'keywords_index'
+                        ), 301
+                    );
                 }
-
-                $this->view['id'] = $id;
-                $this->view['form'] = $form->createView();
-
-            } else {
-                $app['session']->getFlashBag()->add(
-                    'message', array(
-                        'type' => 'danger',
-                        'content' => 'Nie znaleziono postu'
-                    )
-                );
-                return $app->redirect(
-                    $app['url_generator']->generate(
-                        'keywords_index'
-                    ), 301
-                );
+            } catch (\Exception $e) {
+                $errors[] = 'Coś poszło niezgodnie z planem';
             }
             return $app['twig']->render('keywords/delete.twig', $this->view);
         } else {
@@ -383,22 +388,22 @@ class KeywordsController implements ControllerProviderInterface
     public function connectAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
+            try {
 
-            $article_id = (int)$request->get('id', 0);
-            $checkArticle = $this->_article->checkArticleId($article_id);
+                $article_id = (int)$request->get('id', 0);
+                $checkArticle = $this->_article->checkArticleId($article_id);
 
-            if ($checkArticle) {
-                $keywords = $this->_model->getKeywordsArray();
-                $form = $app['form.factory']->createBuilder(
-                    new ArticleKeywordForm(), array(
-                    'keywords' => $keywords,
-                    'article_id' => $article_id))
-                    ->getForm();
+                if ($checkArticle) {
+                    $keywords = $this->_model->getKeywordsArray();
+                    $form = $app['form.factory']->createBuilder(
+                        new ArticleKeywordForm(), array(
+                        'keywords' => $keywords,
+                        'article_id' => $article_id))
+                        ->getForm();
 
-                $form->handleRequest($request);
+                    $form->handleRequest($request);
 
-                if ($form->isValid()) {
-                    try {
+                    if ($form->isValid()) {
                         $data = $form->getData();
 
                         $checkTag = $this->_model->checkIfKeywordForArticleExist($data);
@@ -431,25 +436,26 @@ class KeywordsController implements ControllerProviderInterface
                                 ), 301
                             );
                         }
-                    } catch (\PDOException $e){
-                        $app->abort(404, $app['translator']->trans('Articles not found'));
-                    }
-                }
-                return $app['twig']->render('keywords/connect.twig', array(
-                        'form' => $form->createView()
-                    )
-                );
 
-            }  else {
-                $app['session']->getFlashBag()->add(
-                    'message', array(
-                        'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
-                    )
-                );
-                return $app->redirect(
-                    $app['url_generator']->generate('articles_index'),
-                    301
-                );
+                    }
+                    return $app['twig']->render('keywords/connect.twig', array(
+                            'form' => $form->createView()
+                        )
+                    );
+
+                }  else {
+                    $app['session']->getFlashBag()->add(
+                        'message', array(
+                            'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
+                        )
+                    );
+                    return $app->redirect(
+                        $app['url_generator']->generate('articles_index'),
+                        301
+                    );
+                }
+            } catch (\PDOException $e){
+                $app->abort(404, $app['translator']->trans('Articles not found'));
             }
 
         } else {
@@ -468,25 +474,25 @@ class KeywordsController implements ControllerProviderInterface
     public function disconnectAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
+            try {
 
 
-            $record_id = (int)$request->get('id', 0);
-            $checkRecordId = $this->_model->checkIfConnectionExists($record_id);
-            $article_id = $checkRecordId['article_id'];
+                $record_id = (int)$request->get('id', 0);
+                $checkRecordId = $this->_model->checkIfConnectionExists($record_id);
+                $article_id = $checkRecordId['article_id'];
 
-            if ($checkRecordId) {
-                $form = $app['form.factory']->createBuilder(
-                    new DeleteConnectionForm(), array(
-                    'record_id' => $record_id))
-                    ->getForm();
+                if ($checkRecordId) {
+                    $form = $app['form.factory']->createBuilder(
+                        new DeleteConnectionForm(), array(
+                        'record_id' => $record_id))
+                        ->getForm();
 
-                $form->handleRequest($request);
+                    $form->handleRequest($request);
 
-                if ($form->isValid()) {
-                    if ($form->get('Tak')->isClicked()) {
-                        $data = $form->getData();
+                    if ($form->isValid()) {
+                        if ($form->get('Tak')->isClicked()) {
+                            $data = $form->getData();
 
-                        try {
                             $this->_model->disconnectKeywordAndArticle($data);
 
                             $app['session']->getFlashBag()->add(
@@ -501,31 +507,32 @@ class KeywordsController implements ControllerProviderInterface
                                     'articles_view',array('id' => (int)$article_id)
                                 ), 301
                             );
-                        } catch (\PDOException $e){
-                            $app->abort(404, $app['translator']->trans('Articles not found'));
+
+                        } else {
+                            return $app->redirect(
+                                $app['url_generator']->generate(
+                                    'articles_view',array('id' => (int)$article_id)
+                                ), 301
+                            );
                         }
-                    } else {
-                        return $app->redirect(
-                            $app['url_generator']->generate(
-                                'articles_view',array('id' => (int)$article_id)
-                            ), 301
-                        );
                     }
+                    return $app['twig']->render('keywords/disconnect.twig', array(
+                            'form' => $form->createView()
+                        )
+                    );
+                } else {
+                    $app['session']->getFlashBag()->add(
+                        'message', array(
+                            'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
+                        )
+                    );
+                    return $app->redirect(
+                        $app['url_generator']->generate('articles_index'),
+                        301
+                    );
                 }
-                return $app['twig']->render('keywords/disconnect.twig', array(
-                        'form' => $form->createView()
-                    )
-                );
-            } else {
-                $app['session']->getFlashBag()->add(
-                    'message', array(
-                        'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
-                    )
-                );
-                return $app->redirect(
-                    $app['url_generator']->generate('articles_index'),
-                    301
-                );
+            } catch (\PDOException $e){
+                $app->abort(404, $app['translator']->trans('Articles not found'));
             }
 
         } else {

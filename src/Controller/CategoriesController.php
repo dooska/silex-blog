@@ -89,9 +89,10 @@ class CategoriesController implements ControllerProviderInterface
      */
     public function indexAction(Application $app, Request $request)
     {
-        $pageLimit = 10;
-        $page = (int) $request->get('page', 1);
         try {
+
+            $pageLimit = 10;
+            $page = (int) $request->get('page', 1);
             $pagesCount = $this->_model->countCategoriesPages($pageLimit);
             $page = $this->_model->getCurrentPageNumber($page, $pagesCount);
             $categories = $this->_model->getCategoriesPage($page, $pageLimit);
@@ -114,8 +115,9 @@ class CategoriesController implements ControllerProviderInterface
      */
     public function viewAction(Application $app, Request $request)
     {
-        $id = (int)$request->get('id', null);
         try {
+
+            $id = (int)$request->get('id', null);
             $this->view['category'] = $this->_model->getCategory($id);
             $this->view['category_articles'] = $this->_model->getCategoryArticles($id);
         } catch (\PDOException $e) {
@@ -136,46 +138,46 @@ class CategoriesController implements ControllerProviderInterface
     public function addAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
+            try {
 
-            // default values:
+                // default values:
 
-            $form = $app['form.factory']->createBuilder('form')
-                ->add(
-                    'category_name', 'text',
-                    array(
-                        'constraints' => array(
-                            new Assert\NotBlank(),
-                            new Assert\Length(array('min' => 3))
-                        ),
-                        'attr' => array(
-                            'class' => 'form-control'
+                $form = $app['form.factory']->createBuilder('form')
+                    ->add(
+                        'category_name', 'text',
+                        array(
+                            'constraints' => array(
+                                new Assert\NotBlank(),
+                                new Assert\Length(array('min' => 3))
+                            ),
+                            'attr' => array(
+                                'class' => 'form-control'
+                            )
                         )
                     )
-                )
-                ->getForm();
-            $form->handleRequest($request);
+                    ->getForm();
+                $form->handleRequest($request);
 
-            if ($form->isValid()) {
-                try {
+                if ($form->isValid()) {
                     $data = $form->getData();
                     $categoriesModel = new CategoriesModel($app);
                     $categoriesModel->saveCategory($data);
-                } catch (\PDOException $e) {
-                    $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+
+                    $app['session']->getFlashBag()->add(
+                        'message', array(
+                            'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nową kategorię.')
+                        )
+                    );
+                    return $app->redirect(
+                        $app['url_generator']->generate('categories_index'),
+                        301
+                    );
                 }
-                $app['session']->getFlashBag()->add(
-                    'message', array(
-                        'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nową kategorię.')
-                    )
-                );
-                return $app->redirect(
-                    $app['url_generator']->generate('categories_index'),
-                    301
-                );
+
+                $this->view['form'] = $form->createView();
+            } catch (\PDOException $e) {
+                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
             }
-
-            $this->view['form'] = $form->createView();
-
             return $app['twig']->render('categories/add.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
@@ -201,48 +203,61 @@ class CategoriesController implements ControllerProviderInterface
     public function editAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
+            try {
 
-            $id = (int) $request->get('id', 0);
-            $category = $this->_model->getCategory($id);
+                $id = (int) $request->get('id', 0);
+                $category = $this->_model->getCategory($id);
 
-            if (count($category)) {
+                if (count($category)) {
 
-                $form = $app['form.factory']->createBuilder('form', $category)
-                    ->add(
-                        'id', 'hidden',
-                        array(
-                            'data' => $id,
-                            'constraints' => array(
-                                new Assert\NotBlank(),
-                                new Assert\Type(array('type' => 'digit'))
-                            ),
-                        )
-                    )
-                    ->add(
-                        'category_name', 'text',
-                        array(
-                            'constraints' => array(
-                                new Assert\NotBlank(),
-                                new Assert\Length(array('min' => 3))
-                            ),
-                            'attr' => array(
-                                'class' => 'form-control'
+                    $form = $app['form.factory']->createBuilder('form', $category)
+                        ->add(
+                            'id', 'hidden',
+                            array(
+                                'data' => $id,
+                                'constraints' => array(
+                                    new Assert\NotBlank(),
+                                    new Assert\Type(array('type' => 'digit'))
+                                ),
                             )
                         )
-                    )
-                    ->getForm();
-                $form->handleRequest($request);
+                        ->add(
+                            'category_name', 'text',
+                            array(
+                                'constraints' => array(
+                                    new Assert\NotBlank(),
+                                    new Assert\Length(array('min' => 3))
+                                ),
+                                'attr' => array(
+                                    'class' => 'form-control'
+                                )
+                            )
+                        )
+                        ->getForm();
+                    $form->handleRequest($request);
 
-                if ($form->isValid()) {
-                    try {
+                    if ($form->isValid()) {
                         $data = $form->getData();
                         $this->_model->saveCategory($data);
-                    } catch (\PDOException $e) {
-                        $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+
+                        $app['session']->getFlashBag()->add(
+                            'message', array(
+                                'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś wpis.')
+                            )
+                        );
+                        return $app->redirect(
+                            $app['url_generator']->generate('categories_index'),
+                            301
+                        );
                     }
+
+                    $this->view['id'] = $id;
+                    $this->view['form'] = $form->createView();
+
+                } else {
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś wpis.')
+                            'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
                         )
                     );
                     return $app->redirect(
@@ -250,22 +265,9 @@ class CategoriesController implements ControllerProviderInterface
                         301
                     );
                 }
-
-                $this->view['id'] = $id;
-                $this->view['form'] = $form->createView();
-
-            } else {
-                $app['session']->getFlashBag()->add(
-                    'message', array(
-                        'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
-                    )
-                );
-                return $app->redirect(
-                    $app['url_generator']->generate('categories_index'),
-                    301
-                );
+            } catch (\PDOException $e) {
+                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
             }
-
             return $app['twig']->render('categories/edit.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
@@ -283,30 +285,30 @@ class CategoriesController implements ControllerProviderInterface
     public function deleteAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
+            try {
 
-            $categoriesModel = new CategoriesModel($app);
-            $id = (int) $request->get('id', 0);
-            $category = $categoriesModel->getCategory($id);
+                $categoriesModel = new CategoriesModel($app);
+                $id = (int) $request->get('id', 0);
+                $category = $categoriesModel->getCategory($id);
 
-            if (count($category)) {
-                $data = array();
-                $form = $app['form.factory']->createBuilder('form', $data)
-                    ->add(
-                        'id', 'hidden', array(
-                            'data' => $id,
+                if (count($category)) {
+                    $data = array();
+                    $form = $app['form.factory']->createBuilder('form', $data)
+                        ->add(
+                            'id', 'hidden', array(
+                                'data' => $id,
+                            )
                         )
-                    )
-                    ->add('Tak', 'submit')
-                    ->add('Nie', 'submit')
-                    ->getForm();
+                        ->add('Tak', 'submit')
+                        ->add('Nie', 'submit')
+                        ->getForm();
 
-                $form->handleRequest($request);
+                    $form->handleRequest($request);
 
-                if ($form->isValid()) {
-                    if ($form->get('Tak')->isClicked()) {
-                        $data = $form->getData();
+                    if ($form->isValid()) {
+                        if ($form->get('Tak')->isClicked()) {
+                            $data = $form->getData();
 
-                        try {
                             $this->_model->removeCategory($data);
 
                             $app['session']->getFlashBag()->add(
@@ -321,33 +323,34 @@ class CategoriesController implements ControllerProviderInterface
                                     'categories_index'
                                 ), 301
                             );
-                        } catch (\PDOException $e) {
-                            $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+
+                        } else {
+                            return $app->redirect(
+                                $app['url_generator']->generate(
+                                    'categories_index'
+                                ), 301
+                            );
                         }
-                    } else {
-                        return $app->redirect(
-                            $app['url_generator']->generate(
-                                'categories_index'
-                            ), 301
-                        );
                     }
+
+                    $this->view['id'] = $id;
+                    $this->view['form'] = $form->createView();
+
+                } else {
+                    $app['session']->getFlashBag()->add(
+                        'message', array(
+                            'type' => 'danger',
+                            'content' => 'Nie znaleziono postu'
+                        )
+                    );
+                    return $app->redirect(
+                        $app['url_generator']->generate(
+                            'categories_index'
+                        ), 301
+                    );
                 }
-
-                $this->view['id'] = $id;
-                $this->view['form'] = $form->createView();
-
-            } else {
-                $app['session']->getFlashBag()->add(
-                    'message', array(
-                        'type' => 'danger',
-                        'content' => 'Nie znaleziono postu'
-                    )
-                );
-                return $app->redirect(
-                    $app['url_generator']->generate(
-                        'categories_index'
-                    ), 301
-                );
+            } catch (\PDOException $e) {
+                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
             }
             return $app['twig']->render('categories/delete.twig', $this->view);
         } else {

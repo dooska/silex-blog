@@ -64,85 +64,86 @@ class RegistrationController implements ControllerProviderInterface
      */
     public function register(Application $app, Request $request)
     {
-        $data = array();
-        $form = $app['form.factory']->createBuilder('form', $data)
-            ->add(
-                'login', 'text', array(
-                    'constraints' => array(
-                        new Assert\NotBlank()
-                    ),
-                    'attr' => array(
-                        'class' => 'form-control'
-                    )
-                )
-            )
-            ->add(
-                'email', 'text', array(
-                    'label' => 'Email',
-                    'constraints' => array(
-                        new Assert\NotBlank(),
-                        new Assert\Email(
-                            array(
-                                'message' => 'Email nie jest poprawny'
-                            )
+        try
+        {
+            $data = array();
+            $form = $app['form.factory']->createBuilder('form', $data)
+                ->add(
+                    'login', 'text', array(
+                        'constraints' => array(
+                            new Assert\NotBlank()
+                        ),
+                        'attr' => array(
+                            'class' => 'form-control'
                         )
-                    ),
-                    'attr' => array(
-                        'class' => 'form-control'
                     )
                 )
-            )
-            ->add(
-                'password', 'password', array(
-                    'label' => 'Hasło',
-                    'constraints' => array(
-                        new Assert\NotBlank()
-                    ),
-                    'attr' => array(
-                        'class' => 'form-control'
+                ->add(
+                    'email', 'text', array(
+                        'label' => 'Email',
+                        'constraints' => array(
+                            new Assert\NotBlank(),
+                            new Assert\Email(
+                                array(
+                                    'message' => 'Email nie jest poprawny'
+                                )
+                            )
+                        ),
+                        'attr' => array(
+                            'class' => 'form-control'
+                        )
                     )
                 )
-            )
-            ->add(
-                'confirm_password', 'password', array(
-                    'label' => 'Potwierdź hasło',
-                    'constraints' => array(
-                        new Assert\NotBlank()
-                    ),
-                    'attr' => array(
-                        'class' => 'form-control'
+                ->add(
+                    'password', 'password', array(
+                        'label' => 'Hasło',
+                        'constraints' => array(
+                            new Assert\NotBlank()
+                        ),
+                        'attr' => array(
+                            'class' => 'form-control'
+                        )
                     )
                 )
-            )
-            ->getForm();
+                ->add(
+                    'confirm_password', 'password', array(
+                        'label' => 'Potwierdź hasło',
+                        'constraints' => array(
+                            new Assert\NotBlank()
+                        ),
+                        'attr' => array(
+                            'class' => 'form-control'
+                        )
+                    )
+                )
+                ->getForm();
 
 
-        $form->handleRequest($request);
+            $form->handleRequest($request);
 
-        if ($form->isValid()) {
-            $data = $form->getData();
+            if ($form->isValid()) {
+                $data = $form->getData();
 
-            $data['login'] = $app
-                ->escape($data['login']);
-            $data['email'] = $app
-                ->escape($data['email']);
-            $data['password'] = $app
-                ->escape($data['password']);
-            $data['confirm_password'] = $app
-                ->escape($data['confirm_password']);
+                $data['login'] = $app
+                    ->escape($data['login']);
+                $data['email'] = $app
+                    ->escape($data['email']);
+                $data['password'] = $app
+                    ->escape($data['password']);
+                $data['confirm_password'] = $app
+                    ->escape($data['confirm_password']);
 
-            if ($data['password'] === $data['confirm_password']) {
+                if ($data['password'] === $data['confirm_password']) {
 
-                $password = $app['security.encoder.digest']
-                    ->encodePassword($data['password'], '');
+                    $password = $app['security.encoder.digest']
+                        ->encodePassword($data['password'], '');
 
-                $checkLogin = $this->_model->getUserByLogin(
-                    $data['login']
-                );
+                    $checkLogin = $this->_model->getUserByLogin(
+                        $data['login']
+                    );
 
-                if (!$checkLogin) {
-                    try
-                    {
+                    if (!$checkLogin) {
+
                         $this->_model->register(
                             $data,
                             $password
@@ -153,16 +154,24 @@ class RegistrationController implements ControllerProviderInterface
                                     '/register/success'
                                 ), 301
                         );
-                    }
-                    catch (\Exception $e)
-                    {
-                        $errors[] = 'Rejestracja się nie powiodła,
-                        spróbuj jeszcze raz';
+
+                    } else {
+                        $app['session']->getFlashBag()->add(
+                            'message', array(
+                                'type' => 'warning', 'content' => 'Login zajęty'
+                            )
+                        );
+                        return $app['twig']->render(
+                            'users/register.twig', array(
+                                'form' => $form->createView()
+                            )
+                        );
                     }
                 } else {
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'warning', 'content' => 'Login zajęty'
+                            'type' => 'warning',
+                            'content' => 'Hasła różnią się między sobą'
                         )
                     );
                     return $app['twig']->render(
@@ -171,27 +180,20 @@ class RegistrationController implements ControllerProviderInterface
                         )
                     );
                 }
-            } else {
-                $app['session']->getFlashBag()->add(
-                    'message', array(
-                        'type' => 'warning',
-                        'content' => 'Hasła różnią się między sobą'
-                    )
-                );
-                return $app['twig']->render(
-                    'users/register.twig', array(
-                        'form' => $form->createView()
-                    )
-                );
             }
-        }
 
-        return $app['twig']->render(
-            'users/register.twig', array(
-                'form' => $form->createView(),
-                'data' => $data
-            )
-        );
+            return $app['twig']->render(
+                'users/register.twig', array(
+                    'form' => $form->createView(),
+                    'data' => $data
+                )
+            );
+        }
+        catch (\Exception $e)
+        {
+            $errors[] = 'Rejestracja się nie powiodła,
+                        spróbuj jeszcze raz';
+        }
     }
 
     /**

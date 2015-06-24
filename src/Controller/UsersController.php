@@ -93,97 +93,110 @@ class UsersController implements ControllerProviderInterface
 
     public function viewAction(Application $app, Request $request)
     {
-        $currentUser = $this->_model->getCurrentUserInfo($app);
+        try {
+            $currentUser = $this->_model->getCurrentUserInfo($app);
 
-        if (count($currentUser)) {
-            return $app['twig']->render(
-                'users/view.twig', array(
-                    'user' => $currentUser,
-                    'userinfo' => $currentUser
-                )
-            );
-        } else {
-            $app['session']->getFlashBag()->add(
-                'message', array(
-                    'type' => 'danger',
-                    'content' => 'Nie znaleziono użytkownika'
-                )
-            );
-            return $app->redirect(
-                $app['url_generator']->generate(
-                    'articles_index'
-                ), 301
-            );
+            if (count($currentUser)) {
+                return $app['twig']->render(
+                    'users/view.twig', array(
+                        'user' => $currentUser,
+                        'userinfo' => $currentUser
+                    )
+                );
+            } else {
+                $app['session']->getFlashBag()->add(
+                    'message', array(
+                        'type' => 'danger',
+                        'content' => 'Nie znaleziono użytkownika'
+                    )
+                );
+                return $app->redirect(
+                    $app['url_generator']->generate(
+                        'articles_index'
+                    ), 301
+                );
+            }
+        }
+        catch (\Exception $e)
+        {
+            $errors[] = 'Wystąpił błąd';
         }
     }
 
     public function deleteAction(Application $app, Request $request)
     {
-        $currentUser = $this->_model->getCurrentUserInfo($app);
-        $id = (int)$currentUser['id'];
+        try {
+            $currentUser = $this->_model->getCurrentUserInfo($app);
+            $id = (int)$currentUser['id'];
 
 
-        if (count($currentUser)) {
-            $data = array();
-            $form = $app['form.factory']->createBuilder('form', $data)
-                ->add(
-                    'id', 'hidden', array(
-                        'data' => $id,
+            if (count($currentUser)) {
+                $data = array();
+                $form = $app['form.factory']->createBuilder('form', $data)
+                    ->add(
+                        'id', 'hidden', array(
+                            'data' => $id,
+                        )
                     )
-                )
-                ->add('Tak', 'submit')
-                ->add('Nie', 'submit')
-                ->getForm();
+                    ->add('Tak', 'submit')
+                    ->add('Nie', 'submit')
+                    ->getForm();
 
-            $form->handleRequest($request);
+                $form->handleRequest($request);
 
-            if ($form->isValid()) {
-                if ($form->get('Tak')->isClicked()) {
-                    $data = $form->getData();
+                if ($form->isValid()) {
+                    if ($form->get('Tak')->isClicked()) {
+                        $data = $form->getData();
 
-                    try {
-                        $this->_model->removeUser($data);
+                        try {
+                            $this->_model->removeUser($data);
 
-                        $app['session']->getFlashBag()->add(
-                            'message', array(
-                                'type' => 'success',
-                                'content' =>
-                                    'User został usunięty'
-                            )
-                        );
+                            $app['session']->getFlashBag()->add(
+                                'message', array(
+                                    'type' => 'success',
+                                    'content' =>
+                                        'User został usunięty'
+                                )
+                            );
+                            return $app->redirect(
+                                $app['url_generator']->generate(
+                                    'articles_index'
+                                ), 301
+                            );
+                        } catch (\Exception $e) {
+                            $errors[] = 'Coś poszło niezgodnie z planem';
+                        }
+                    } else {
                         return $app->redirect(
                             $app['url_generator']->generate(
                                 'articles_index'
                             ), 301
                         );
-                    } catch (\Exception $e) {
-                        $errors[] = 'Coś poszło niezgodnie z planem';
                     }
-                } else {
-                    return $app->redirect(
-                        $app['url_generator']->generate(
-                            'articles_index'
-                        ), 301
-                    );
                 }
+                return $app['twig']->render(
+                    'users/delete.twig', array(
+                        'form' => $form->createView()
+                    )
+                );
+            } else {
+                $app['session']->getFlashBag()->add(
+                    'message', array(
+                        'type' => 'danger',
+                        'content' => 'Nie znaleziono użytkownika'
+                    )
+                );
+                return $app->redirect(
+                    $app['url_generator']->generate(
+                        'users/view.twig'
+                    ), 301
+                );
             }
-            return $app['twig']->render(
-                'users/delete.twig', array(
-                    'form' => $form->createView()
-                )
-            );
-        } else {
-            $app['session']->getFlashBag()->add(
-                'message', array(
-                    'type' => 'danger',
-                    'content' => 'Nie znaleziono użytkownika'
-                )
-            );
-            return $app->redirect(
-                $app['url_generator']->generate(
-                    'users/view.twig'
-                ), 301
-            );
+        }
+        catch (\Exception $e)
+        {
+            $errors[] = 'Rejestracja się nie powiodła,
+                        spróbuj jeszcze raz';
         }
 
     }
