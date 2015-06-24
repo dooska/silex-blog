@@ -9,6 +9,7 @@
 
 namespace Form;
 
+use Silex\Application;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
@@ -42,6 +43,7 @@ class CommentForm extends AbstractType
             'comment_content',
             'text',
             array(
+                'label' => 'Komentarz',
                 'constraints' => array(
                     new Assert\NotBlank(),
                     new Assert\Length(array('min' => 8, 'max' => 50))

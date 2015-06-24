@@ -60,6 +60,7 @@ class ArticleKeywordForm extends AbstractType
                 'keyword_id',
                 'choice',
                 array(
+                    'label' => $app['translator']->trans('word'),
                     'choices' => $keywords,
                     'constraints' => array(
                         new Assert\NotBlank(),

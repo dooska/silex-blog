@@ -97,7 +97,7 @@ class CategoriesController implements ControllerProviderInterface
             $page = $this->_model->getCurrentPageNumber($page, $pagesCount);
             $categories = $this->_model->getCategoriesPage($page, $pageLimit);
         } catch (\PDOException $e) {
-            $app->abort(404, $app['translator']->trans('Categories not exists'));
+            $app->abort(404, $app['translator']->trans('categories_not_found'));
         }
         $this->view['paginator']
             = array('page' => $page, 'pagesCount' => $pagesCount);
@@ -121,7 +121,7 @@ class CategoriesController implements ControllerProviderInterface
             $this->view['category'] = $this->_model->getCategory($id);
             $this->view['category_articles'] = $this->_model->getCategoryArticles($id);
         } catch (\PDOException $e) {
-            $app->abort(404, $app['translator']->trans('Category not found'));
+            $app->abort(404, $app['translator']->trans('category_not_found'));
         }
         return $app['twig']->render('categories/view.twig', $this->view);
     }
@@ -146,6 +146,7 @@ class CategoriesController implements ControllerProviderInterface
                     ->add(
                         'category_name', 'text',
                         array(
+                            'label' => $app['translator']->trans('category_name'),
                             'constraints' => array(
                                 new Assert\NotBlank(),
                                 new Assert\Length(array('min' => 3))
@@ -165,7 +166,7 @@ class CategoriesController implements ControllerProviderInterface
 
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nową kategorię.')
+                            'type' => 'success', 'content' => $app['translator']->trans('category_added')
                         )
                     );
                     return $app->redirect(
@@ -176,13 +177,13 @@ class CategoriesController implements ControllerProviderInterface
 
                 $this->view['form'] = $form->createView();
             } catch (\PDOException $e) {
-                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                $app->abort(500, $app['translator']->trans('error_occured'));
             }
             return $app['twig']->render('categories/add.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(
@@ -224,6 +225,7 @@ class CategoriesController implements ControllerProviderInterface
                         ->add(
                             'category_name', 'text',
                             array(
+                                'label' => $app['translator']->trans('category_name'),
                                 'constraints' => array(
                                     new Assert\NotBlank(),
                                     new Assert\Length(array('min' => 3))
@@ -242,7 +244,7 @@ class CategoriesController implements ControllerProviderInterface
 
                         $app['session']->getFlashBag()->add(
                             'message', array(
-                                'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś wpis.')
+                                'type' => 'success', 'content' => $app['translator']->trans('category_edited')
                             )
                         );
                         return $app->redirect(
@@ -257,7 +259,7 @@ class CategoriesController implements ControllerProviderInterface
                 } else {
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
+                            'type' => 'warning', 'content' => $app['translator']->trans('categories_not_found')
                         )
                     );
                     return $app->redirect(
@@ -266,13 +268,13 @@ class CategoriesController implements ControllerProviderInterface
                     );
                 }
             } catch (\PDOException $e) {
-                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                $app->abort(500, $app['translator']->trans('error_occured'));
             }
             return $app['twig']->render('categories/edit.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(
@@ -314,8 +316,7 @@ class CategoriesController implements ControllerProviderInterface
                             $app['session']->getFlashBag()->add(
                                 'message', array(
                                     'type' => 'success',
-                                    'content' =>
-                                        'Kategoria została usunięta wraz z artykułami'
+                                    'content' => $app['translator']->trans('category_deleted')
                                 )
                             );
                             return $app->redirect(
@@ -340,7 +341,7 @@ class CategoriesController implements ControllerProviderInterface
                     $app['session']->getFlashBag()->add(
                         'message', array(
                             'type' => 'danger',
-                            'content' => 'Nie znaleziono postu'
+                            'content' => $app['translator']->trans('article_not_found')
                         )
                     );
                     return $app->redirect(
@@ -350,13 +351,13 @@ class CategoriesController implements ControllerProviderInterface
                     );
                 }
             } catch (\PDOException $e) {
-                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                $app->abort(500, $app['translator']->trans('error_occured'));
             }
             return $app['twig']->render('categories/delete.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(

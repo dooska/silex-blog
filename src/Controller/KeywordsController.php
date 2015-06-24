@@ -113,7 +113,7 @@ class KeywordsController implements ControllerProviderInterface
             $this->view['keywords'] = $keywords;
         } catch (\PDOException $e) {
             $app->abort(404, $app['translator']
-                ->trans('An error occurred, please try again later'));
+                ->trans('error_occured'));
         }
         return $app['twig']->render('keywords/index.twig', $this->view);
     }
@@ -134,7 +134,7 @@ class KeywordsController implements ControllerProviderInterface
             $this->view['keyword_articles'] = $this->_model->getKeywordArticles($id);
         } catch (\PDOException $e) {
             $app->abort(404, $app['translator']
-                ->trans('An error occurred, please try again later'));
+                ->trans('error_occured'));
         }
         return $app['twig']->render('keywords/view.twig', $this->view);
     }
@@ -168,7 +168,7 @@ class KeywordsController implements ControllerProviderInterface
                         $this->_model->saveKeyword($data);
                         $app['session']->getFlashBag()->add(
                             'message', array(
-                                'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nowe słowo kluczowe.')
+                                'type' => 'success', 'content' => $app['translator']->trans('keyword_added')
                             )
                         );
                         return $app->redirect(
@@ -179,7 +179,7 @@ class KeywordsController implements ControllerProviderInterface
                         $app['session']->getFlashBag()->add(
                             'message', array(
                                 'type' => 'danger',
-                                'content' => $app['translator']->trans('Słowo kluczowe istnieje.')
+                                'content' => $app['translator']->trans('keyword_exists')
                             )
                         );
                         return $app->redirect(
@@ -190,7 +190,7 @@ class KeywordsController implements ControllerProviderInterface
 
                 }
             } catch (\PDOException $e) {
-                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                $app->abort(500, $app['translator']->trans('error_occured'));
             }
             $this->view['form'] = $form->createView();
 
@@ -198,7 +198,7 @@ class KeywordsController implements ControllerProviderInterface
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(
@@ -243,6 +243,7 @@ class KeywordsController implements ControllerProviderInterface
                         ->add(
                             'word', 'text',
                             array(
+                                'label' => $app['translator']->trans('word'),
                                 'constraints' => array(
                                     new Assert\NotBlank(),
                                     new Assert\Length(array('min' => 3))
@@ -261,7 +262,7 @@ class KeywordsController implements ControllerProviderInterface
 
                         $app['session']->getFlashBag()->add(
                             'message', array(
-                                'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś słowo kluczowe.')
+                                'type' => 'success', 'content' => $app['translator']->trans('keyword_edited')
                             )
                         );
                         return $app->redirect(
@@ -276,7 +277,7 @@ class KeywordsController implements ControllerProviderInterface
                 } else {
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
+                            'type' => 'warning', 'content' => $app['translator']->trans('article_not_found')
                         )
                     );
 
@@ -286,13 +287,13 @@ class KeywordsController implements ControllerProviderInterface
                     );
                 }
             } catch (\PDOException $e) {
-                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                $app->abort(500, $app['translator']->trans('error_occured'));
             }
             return $app['twig']->render('keywords/edit.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(
@@ -333,8 +334,7 @@ class KeywordsController implements ControllerProviderInterface
                             $app['session']->getFlashBag()->add(
                                 'message', array(
                                     'type' => 'success',
-                                    'content' =>
-                                        'Słowo kluczowe zostało usunięte'
+                                    'content' => $app['translator']->trans('keyword_deleted')
                                 )
                             );
                             return $app->redirect(
@@ -359,8 +359,7 @@ class KeywordsController implements ControllerProviderInterface
                     $app['session']->getFlashBag()->add(
                         'message', array(
                             'type' => 'danger',
-                            'content' => 'Nie znaleziono postu'
-                        )
+                            'content' => $app['translator']->trans('article_not_found')                        )
                     );
                     return $app->redirect(
                         $app['url_generator']->generate(
@@ -369,13 +368,13 @@ class KeywordsController implements ControllerProviderInterface
                     );
                 }
             } catch (\Exception $e) {
-                $errors[] = 'Coś poszło niezgodnie z planem';
+                $app->abort(500, $app['translator']->trans('error_occured'));
             }
             return $app['twig']->render('keywords/delete.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(
@@ -415,7 +414,7 @@ class KeywordsController implements ControllerProviderInterface
                             $app['session']->getFlashBag()->add(
                                 'message', array(
                                     'type' => 'success',
-                                    'content' => 'Słowo kluczowe zostało dodane'
+                                    'content' => $app['translator']->trans('keyword_added')
                                 )
                             );
                             return $app->redirect(
@@ -427,7 +426,7 @@ class KeywordsController implements ControllerProviderInterface
                             $app['session']->getFlashBag()->add(
                                 'message', array(
                                     'type' => 'danger',
-                                    'content' => 'Słowo kluczowe jest już przypisane'
+                                    'content' => $app['translator']->trans('connections_exists')
                                 )
                             );
                             return $app->redirect(
@@ -446,7 +445,7 @@ class KeywordsController implements ControllerProviderInterface
                 }  else {
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
+                            'type' => 'warning', 'content' => $app['translator']->trans('article_not_found')
                         )
                     );
                     return $app->redirect(
@@ -455,13 +454,13 @@ class KeywordsController implements ControllerProviderInterface
                     );
                 }
             } catch (\PDOException $e){
-                $app->abort(404, $app['translator']->trans('Articles not found'));
+                $app->abort(404, $app['translator']->trans('article_not_found'));
             }
 
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(
@@ -498,8 +497,7 @@ class KeywordsController implements ControllerProviderInterface
                             $app['session']->getFlashBag()->add(
                                 'message', array(
                                     'type' => 'success',
-                                    'content' =>
-                                        'Słowo kluczowe zostało usunięte'
+                                    'content' => $app['translator']->trans('keyword_deleted')
                                 )
                             );
                             return $app->redirect(
@@ -523,7 +521,7 @@ class KeywordsController implements ControllerProviderInterface
                 } else {
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
+                            'type' => 'warning', 'content' => $app['translator']->trans('article_not_found')
                         )
                     );
                     return $app->redirect(
@@ -532,13 +530,13 @@ class KeywordsController implements ControllerProviderInterface
                     );
                 }
             } catch (\PDOException $e){
-                $app->abort(404, $app['translator']->trans('Articles not found'));
+                $app->abort(404, $app['translator']->trans('article_not_found'));
             }
 
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(

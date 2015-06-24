@@ -107,7 +107,7 @@ class UsersController implements ControllerProviderInterface
                 $app['session']->getFlashBag()->add(
                     'message', array(
                         'type' => 'danger',
-                        'content' => 'Nie znaleziono użytkownika'
+                        'content' => $app['translator']->trans('user_not_found')
                     )
                 );
                 return $app->redirect(
@@ -117,9 +117,10 @@ class UsersController implements ControllerProviderInterface
                 );
             }
         }
-        catch (\Exception $e)
+        catch (\PDOException $e)
         {
-            $errors[] = 'Wystąpił błąd';
+            $app->abort(500, $app['translator']
+                ->trans('error_occured'));
         }
     }
 
@@ -148,24 +149,21 @@ class UsersController implements ControllerProviderInterface
                     if ($form->get('Tak')->isClicked()) {
                         $data = $form->getData();
 
-                        try {
-                            $this->_model->removeUser($data);
+                        $this->_model->removeUser($data);
 
-                            $app['session']->getFlashBag()->add(
-                                'message', array(
-                                    'type' => 'success',
-                                    'content' =>
-                                        'User został usunięty'
-                                )
-                            );
-                            return $app->redirect(
-                                $app['url_generator']->generate(
-                                    'articles_index'
-                                ), 301
-                            );
-                        } catch (\Exception $e) {
-                            $errors[] = 'Coś poszło niezgodnie z planem';
-                        }
+                        $app['session']->getFlashBag()->add(
+                            'message', array(
+                                'type' => 'success',
+                                'content' => $app['translator']->trans('user_deleted')
+
+                            )
+                        );
+                        return $app->redirect(
+                            $app['url_generator']->generate(
+                                'articles_index'
+                            ), 301
+                        );
+
                     } else {
                         return $app->redirect(
                             $app['url_generator']->generate(
@@ -183,7 +181,7 @@ class UsersController implements ControllerProviderInterface
                 $app['session']->getFlashBag()->add(
                     'message', array(
                         'type' => 'danger',
-                        'content' => 'Nie znaleziono użytkownika'
+                        'content' => $app['translator']->trans('user_not_found')
                     )
                 );
                 return $app->redirect(
@@ -192,11 +190,10 @@ class UsersController implements ControllerProviderInterface
                     ), 301
                 );
             }
-        }
-        catch (\Exception $e)
-        {
-            $errors[] = 'Rejestracja się nie powiodła,
-                        spróbuj jeszcze raz';
+
+        } catch (\PDOException $e) {
+            $app->abort(500, $app['translator']
+                ->trans('error_occured'));
         }
 
     }

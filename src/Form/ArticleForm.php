@@ -50,6 +50,7 @@ class ArticleForm extends AbstractType
             ->add(
                 'title', 'text',
                 array(
+                    'label' => 'Asd',
                     'constraints' => array(
                         new Assert\NotBlank(),
                         new Assert\Length(array('min' => 5))

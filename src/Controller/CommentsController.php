@@ -93,60 +93,9 @@ class CommentsController implements ControllerProviderInterface
         $commentsController->get('/view/{id}', array($this, 'viewAction'))
             ->bind('comments_view');
         $commentsController->get('/view/{id}/', array($this, 'viewAction'));
-//        $commentsController->get('/index', array($this, 'indexAction'));
-//        $commentsController->get('/index/', array($this, 'indexAction'))
-//            ->bind('comments_index');
-//        $commentsController->get('/{page}', array($this, 'indexAction'))
-//            ->value('page', 1)->bind('comments_index');
         return $commentsController;
     }
 
-    /**
-     * View all comments for post
-     *
-     * @param Application $app     application object
-     * @param Request     $request request
-     *
-     * @access public
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse Redirect.
-     * @return mixed Generates page.
-     */
-    /*   public function indexAction(Application $app, Request $request)
-       {
-           $id = (int)$request->get('article_id', 0);
-
-           $check = $this->_articles->checkArticleId($id);
-
-           if ($check) {
-
-               $comments = $this->_model->getCommentsList($id);
-
-               $_isLogged = $this->_user->_isLoggedIn($app);
-               if ($_isLogged) {
-                   $access = $this->_user->getIdCurrentUser($app);
-               } else {
-                   $access = 0;
-               }
-
-               return $app['twig']->render(
-                   'comments/index.twig', array(
-                       'comments' => $comments, 'article_id' => $id, 'access' => $access
-                   )
-               );
-           } else {
-               $app['session']->getFlashBag()->add(
-                   'message', array(
-                       'type' => 'danger',
-                       'content' => 'Nie znaleziono komentarza'
-                   )
-               );
-               return $app->redirect(
-                   $app['url_generator']->generate(
-                       'articles_index'
-                   ), 301
-               );
-           }
-       }*/
 
     public function addAction(Application $app, Request $request)
     {
@@ -182,8 +131,7 @@ class CommentsController implements ControllerProviderInterface
                         $app['session']->getFlashBag()->add(
                             'message', array(
                                 'type' => 'success',
-                                'content' => 'Komentarz został dodany'
-                            )
+                                'content' => $app['translator']->trans('comment_added')                            )
                         );
                         return $app->redirect(
                             $app['url_generator']->generate(
@@ -202,7 +150,7 @@ class CommentsController implements ControllerProviderInterface
                     $app['session']->getFlashBag()->add(
                         'message', array(
                             'type' => 'danger',
-                            'content' => 'Nie znaleziono komentarza'
+                            'content' => $app['translator']->trans('comment_not_found')
                         )
                     );
                     return $app->redirect(
@@ -218,7 +166,7 @@ class CommentsController implements ControllerProviderInterface
             $app['session']->getFlashBag()->add(
                 'message', array(
                     'type' => 'danger',
-                    'content' => $app['translator']->trans('Zaloguj się, aby dodać komentarz!')
+                    'content' => $app['translator']->trans('log_in')
                 )
             );
             return $app->redirect(
@@ -268,7 +216,7 @@ class CommentsController implements ControllerProviderInterface
                             $app['session']->getFlashBag()->add(
                                 'message', array(
                                     'type' => 'success',
-                                    'content' => 'Komentarz został zmieniony'
+                                    'content' => 'comment_edited'
                                 )
                             );
                             return $app->redirect(
@@ -287,7 +235,7 @@ class CommentsController implements ControllerProviderInterface
                         $app['session']->getFlashBag()->add(
                             'message', array(
                                 'type' => 'danger',
-                                'content' => 'Nie znaleziono komentarza'
+                                'content' => 'comment_not_found'
                             )
                         );
                         return $app->redirect(
@@ -300,7 +248,7 @@ class CommentsController implements ControllerProviderInterface
                     $app['session']->getFlashBag()->add(
                         'message', array(
                             'type' => 'danger',
-                            'content' => 'Nie znaleziono komentarza'
+                            'content' => 'comment_not_found'
                         )
                     );
                     return $app->redirect(
@@ -311,12 +259,12 @@ class CommentsController implements ControllerProviderInterface
 
                 }
             } catch (\PDOException $e) {
-                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                $app->abort(500, $app['translator']->trans('error_occured'));
             }
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(
@@ -358,21 +306,21 @@ class CommentsController implements ControllerProviderInterface
                                     'data' => $id,
                                 )
                             )
-                            ->add('Yes', 'submit')
-                            ->add('No', 'submit')
+                            ->add('Tak', 'submit')
+                            ->add('Nie', 'submit')
                             ->getForm();
 
                         $form->handleRequest($request);
 
                         if ($form->isValid()) {
-                            if ($form->get('Yes')->isClicked()) {
+                            if ($form->get('Tak')->isClicked()) {
                                 $data = $form->getData();
                                 $model = $this->_model->deleteComment($data);
 
                                 $app['session']->getFlashBag()->add(
                                     'message', array(
                                         'type' => 'success',
-                                        'content' => 'Komantarz został usunięty'
+                                        'content' => $app['translator']->trans('comment_deleted')
                                     )
                                 );
                                 return $app->redirect(
@@ -398,7 +346,7 @@ class CommentsController implements ControllerProviderInterface
                         $app['session']->getFlashBag()->add(
                             'message', array(
                                 'type' => 'danger',
-                                'content' => 'Nie znaleziono komentarza'
+                                'content' => $app['translator']->trans('comment_not_found')
                             )
                         );
                         return $app->redirect(
@@ -411,7 +359,7 @@ class CommentsController implements ControllerProviderInterface
                     $app['session']->getFlashBag()->add(
                         'message', array(
                             'type' => 'danger',
-                            'content' => 'Nie znaleziono komentarza'
+                            'content' => $app['translator']->trans('comment_not_found')
                         )
                     );
                     return $app->redirect(
@@ -422,14 +370,14 @@ class CommentsController implements ControllerProviderInterface
 
                 }
             } catch (\PDOException $e) {
-                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                $app->abort(500, $app['translator']->trans('error_occured'));
             }
         }
 
         else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(

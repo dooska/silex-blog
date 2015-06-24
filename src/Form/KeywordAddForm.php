@@ -42,6 +42,7 @@ class KeywordAddForm extends AbstractType
             ->add(
                 'word', 'text',
                 array(
+                    'label' => 'Słowo',
                     'constraints' => array(
                         new Assert\NotBlank(),
                         new Assert\Length(array('min' => 3))

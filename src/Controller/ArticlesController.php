@@ -111,7 +111,7 @@ class ArticlesController implements ControllerProviderInterface
                 = array('page' => $page, 'pagesCount' => $pagesCount);
             $this->view['articles'] = $articles;
         } catch (\PDOException $e){
-            $app->abort(404, $app['translator']->trans('Articles not found'));
+            $app->abort(404, $app['translator']->trans('articles_not_found'));
         }
         return $app['twig']->render('articles/index.twig', $this->view);
     }
@@ -133,7 +133,7 @@ class ArticlesController implements ControllerProviderInterface
             $this->view['keywords'] = $this->_model->getArticleKeywords($id);
             $checkUser = $this->_users_model->_isLoggedIn($app);
         } catch (\PDOException $e){
-            $app->abort(404, $app['translator']->trans('Album not found'));
+            $app->abort(404, $app['translator']->trans('article_not_found'));
         }
         if($checkUser) {
             $this->view['user'] = $this->_users_model->getCurrentUserInfo($app);
@@ -164,20 +164,21 @@ class ArticlesController implements ControllerProviderInterface
 
                 $form = $app['form.factory']->createBuilder('form', $data)
                     ->add(
-                        'title', 'text',
-                        array(
+                        'title', 'text', array(
+                            'label' => $app['translator']->trans('title'),
                             'constraints' => array(
                                 new Assert\NotBlank(),
                                 new Assert\Length(array('min' => 5))
                             ),
                             'attr' => array(
                                 'class' => 'form-control'
-                            )
+                            ),
                         )
                     )
                     ->add(
                         'content', 'textarea',
                         array(
+                            'label' => $app['translator']->trans('content'),
                             'constraints' => array(
                                 new Assert\NotBlank(),
                                 new Assert\Length(array('min' => 5))
@@ -190,6 +191,7 @@ class ArticlesController implements ControllerProviderInterface
                     ->add(
                         'category_id', 'choice',
                         array(
+                            'label' => $app['translator']->trans('category'),
                             'choices' => $categories,
                             'constraints' => array(
                                 new Assert\NotBlank(),
@@ -210,7 +212,7 @@ class ArticlesController implements ControllerProviderInterface
 
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'success', 'content' => $app['translator']->trans('Dodałeś nowy wpis.')
+                            'type' => 'success', 'content' => $app['translator']->trans('article_added')
                         )
                     );
 
@@ -221,7 +223,7 @@ class ArticlesController implements ControllerProviderInterface
 
                 }
             } catch (\PDOException $e) {
-                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                $app->abort(500, $app['translator']->trans('error_occured'));
             }
             $this->view['form'] = $form->createView();
 
@@ -230,7 +232,7 @@ class ArticlesController implements ControllerProviderInterface
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(
@@ -277,6 +279,7 @@ class ArticlesController implements ControllerProviderInterface
                         ->add(
                             'title', 'text',
                             array(
+                                'label' => $app['translator']->trans('title'),
                                 'constraints' => array(
                                     new Assert\NotBlank(),
                                     new Assert\Length(array('min' => 5))
@@ -289,6 +292,7 @@ class ArticlesController implements ControllerProviderInterface
                         ->add(
                             'content', 'text',
                             array(
+                                'label' => $app['translator']->trans('content'),
                                 'constraints' => array(
                                     new Assert\NotBlank(),
                                     new Assert\Length(array('min' => 5))
@@ -301,6 +305,7 @@ class ArticlesController implements ControllerProviderInterface
                         ->add(
                             'category_id', 'choice',
                             array(
+                                'label' => $app['translator']->trans('category'),
                                 'choices' => $categories,
                                 'constraints' => array(
                                     new Assert\NotBlank(),
@@ -320,7 +325,7 @@ class ArticlesController implements ControllerProviderInterface
 
                         $app['session']->getFlashBag()->add(
                             'message', array(
-                                'type' => 'success', 'content' => $app['translator']->trans('Edytowałeś wpis.')
+                                'type' => 'success', 'content' => $app['translator']->trans('article_edited')
                             )
                         );
                         return $app->redirect(
@@ -335,7 +340,7 @@ class ArticlesController implements ControllerProviderInterface
                 } else {
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'warning', 'content' => $app['translator']->trans('Wpis nie istnieje.')
+                            'type' => 'warning', 'content' => $app['translator']->trans('article_not_found')
                         )
                     );
                     return $app->redirect(
@@ -344,14 +349,14 @@ class ArticlesController implements ControllerProviderInterface
                     );
                 }
             } catch (\PDOException $e) {
-                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                $app->abort(500, $app['translator']->trans('error_occured'));
             }
 
             return $app['twig']->render('articles/edit.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(
@@ -378,8 +383,22 @@ class ArticlesController implements ControllerProviderInterface
                                 'data' => $id,
                             )
                         )
-                        ->add('Tak', 'submit')
-                        ->add('Nie', 'submit')
+                        ->add(
+                            'Tak','submit', array(
+                                'label' => $app['translator']->trans('yes'),
+                                'attr' => array(
+                                    'class' => 'btn btn-danger'
+                                )
+                            )
+                        )
+                        ->add(
+                            'Nie','submit', array(
+                                'label' => $app['translator']->trans('no'),
+                                'attr' => array(
+                                    'class' => 'btn btn-default'
+                                )
+                            )
+                        )
                         ->getForm();
 
                     $form->handleRequest($request);
@@ -394,7 +413,7 @@ class ArticlesController implements ControllerProviderInterface
                                 'message', array(
                                     'type' => 'success',
                                     'content' =>
-                                        'Artykuł został usunięty'
+                                        'article_deleted'
                                 )
                             );
                             return $app->redirect(
@@ -419,7 +438,7 @@ class ArticlesController implements ControllerProviderInterface
                     $app['session']->getFlashBag()->add(
                         'message', array(
                             'type' => 'danger',
-                            'content' => 'Nie znaleziono postu'
+                            'content' => 'article_not_found'
                         )
                     );
                     return $app->redirect(
@@ -429,13 +448,14 @@ class ArticlesController implements ControllerProviderInterface
                     );
                 }
             } catch (\Exception $e) {
-                $errors[] = 'Coś poszło niezgodnie z planem';
+                $app->abort(500, $app['translator']->trans('error_occured'));
             }
             return $app['twig']->render('articles/delete.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('Nie masz odpowiednich uprawnień do tej czynności!')
+                    'type' => 'danger',
+                    'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(

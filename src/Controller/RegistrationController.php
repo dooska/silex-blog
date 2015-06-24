@@ -96,7 +96,7 @@ class RegistrationController implements ControllerProviderInterface
                 )
                 ->add(
                     'password', 'password', array(
-                        'label' => 'Hasło',
+                        'label' => $app['translator']->trans('password'),
                         'constraints' => array(
                             new Assert\NotBlank()
                         ),
@@ -107,7 +107,7 @@ class RegistrationController implements ControllerProviderInterface
                 )
                 ->add(
                     'confirm_password', 'password', array(
-                        'label' => 'Potwierdź hasło',
+                        'label' => $app['translator']->trans('password_confirmation'),
                         'constraints' => array(
                             new Assert\NotBlank()
                         ),
@@ -158,7 +158,8 @@ class RegistrationController implements ControllerProviderInterface
                     } else {
                         $app['session']->getFlashBag()->add(
                             'message', array(
-                                'type' => 'warning', 'content' => 'Login zajęty'
+                                'type' => 'warning',
+                                'content' => $app['translator']->trans('login_not_available')
                             )
                         );
                         return $app['twig']->render(
@@ -171,7 +172,7 @@ class RegistrationController implements ControllerProviderInterface
                     $app['session']->getFlashBag()->add(
                         'message', array(
                             'type' => 'warning',
-                            'content' => 'Hasła różnią się między sobą'
+                            'content' => $app['translator']->trans('passwords_differ')
                         )
                     );
                     return $app['twig']->render(
@@ -189,10 +190,10 @@ class RegistrationController implements ControllerProviderInterface
                 )
             );
         }
-        catch (\Exception $e)
+        catch (\PDOException $e)
         {
-            $errors[] = 'Rejestracja się nie powiodła,
-                        spróbuj jeszcze raz';
+            $app->abort(500, $app['translator']
+                ->trans('error_occured'));
         }
     }
 
