@@ -63,11 +63,15 @@ class CategoriesController implements ControllerProviderInterface
         $categoriesController->post('/edit/{id}', array($this, 'editAction'));
         $categoriesController->match('/edit/{id}', array($this, 'editAction'))
             ->bind('categories_edit');
-        $categoriesController->match('/edit/{id}/', array($this, 'editAction'));
-        $categoriesController->post('/delete/{id}', array($this, 'deleteAction'));
-        $categoriesController->match('/delete/{id}', array($this, 'deleteAction'))
+        $categoriesController
+            ->match('/edit/{id}/', array($this, 'editAction'));
+        $categoriesController
+            ->post('/delete/{id}', array($this, 'deleteAction'));
+        $categoriesController
+            ->match('/delete/{id}', array($this, 'deleteAction'))
             ->bind('categories_delete');
-        $categoriesController->match('/delete/{id}/', array($this, 'deleteAction'));
+        $categoriesController
+            ->match('/delete/{id}/', array($this, 'deleteAction'));
         $categoriesController->get('/view/{id}', array($this, 'viewAction'))
             ->bind('categories_view');
         $categoriesController->get('/view/{id}/', array($this, 'viewAction'));
@@ -119,7 +123,8 @@ class CategoriesController implements ControllerProviderInterface
 
             $id = (int)$request->get('id', null);
             $this->view['category'] = $this->_model->getCategory($id);
-            $this->view['category_articles'] = $this->_model->getCategoryArticles($id);
+            $this->view['category_articles'] = $this->_model
+                ->getCategoryArticles($id);
         } catch (\PDOException $e) {
             $app->abort(404, $app['translator']->trans('category_not_found'));
         }
@@ -146,7 +151,8 @@ class CategoriesController implements ControllerProviderInterface
                     ->add(
                         'category_name', 'text',
                         array(
-                            'label' => $app['translator']->trans('category_name'),
+                            'label' => $app['translator']
+                                ->trans('category_name'),
                             'constraints' => array(
                                 new Assert\NotBlank(),
                                 new Assert\Length(array('min' => 3))
@@ -166,7 +172,9 @@ class CategoriesController implements ControllerProviderInterface
 
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'success', 'content' => $app['translator']->trans('category_added')
+                            'type' => 'success',
+                            'content' => $app['translator']
+                                ->trans('category_added')
                         )
                     );
                     return $app->redirect(
@@ -183,7 +191,9 @@ class CategoriesController implements ControllerProviderInterface
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
+                    'type' => 'danger',
+                    'content' => $app['translator']
+                        ->trans('no_rights')
                 )
             );
             return $app->redirect(
@@ -211,7 +221,8 @@ class CategoriesController implements ControllerProviderInterface
 
                 if (count($category)) {
 
-                    $form = $app['form.factory']->createBuilder('form', $category)
+                    $form = $app['form.factory']
+                        ->createBuilder('form', $category)
                         ->add(
                             'id', 'hidden',
                             array(
@@ -225,7 +236,8 @@ class CategoriesController implements ControllerProviderInterface
                         ->add(
                             'category_name', 'text',
                             array(
-                                'label' => $app['translator']->trans('category_name'),
+                                'label' => $app['translator']
+                                    ->trans('category_name'),
                                 'constraints' => array(
                                     new Assert\NotBlank(),
                                     new Assert\Length(array('min' => 3))
@@ -244,7 +256,9 @@ class CategoriesController implements ControllerProviderInterface
 
                         $app['session']->getFlashBag()->add(
                             'message', array(
-                                'type' => 'success', 'content' => $app['translator']->trans('category_edited')
+                                'type' => 'success',
+                                'content' => $app['translator']
+                                    ->trans('category_edited')
                             )
                         );
                         return $app->redirect(
@@ -259,7 +273,9 @@ class CategoriesController implements ControllerProviderInterface
                 } else {
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'warning', 'content' => $app['translator']->trans('categories_not_found')
+                            'type' => 'warning',
+                            'content' => $app['translator']
+                                ->trans('categories_not_found')
                         )
                     );
                     return $app->redirect(
@@ -274,7 +290,8 @@ class CategoriesController implements ControllerProviderInterface
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
+                    'type' => 'danger',
+                    'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(
@@ -284,6 +301,14 @@ class CategoriesController implements ControllerProviderInterface
         }
     }
 
+    /**
+     * Delete action.
+     *
+     * @access public
+     * @param Silex\Application $app Silex application
+     * @param Symfony\Component\HttpFoundation\Request $request Request object
+     * @return string Output
+     */
     public function deleteAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
@@ -316,7 +341,8 @@ class CategoriesController implements ControllerProviderInterface
                             $app['session']->getFlashBag()->add(
                                 'message', array(
                                     'type' => 'success',
-                                    'content' => $app['translator']->trans('category_deleted')
+                                    'content' => $app['translator']
+                                        ->trans('category_deleted')
                                 )
                             );
                             return $app->redirect(
@@ -341,7 +367,8 @@ class CategoriesController implements ControllerProviderInterface
                     $app['session']->getFlashBag()->add(
                         'message', array(
                             'type' => 'danger',
-                            'content' => $app['translator']->trans('article_not_found')
+                            'content' => $app['translator']
+                                ->trans('article_not_found')
                         )
                     );
                     return $app->redirect(
@@ -357,7 +384,8 @@ class CategoriesController implements ControllerProviderInterface
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
+                    'type' => 'danger',
+                    'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(

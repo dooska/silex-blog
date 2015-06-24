@@ -78,7 +78,8 @@ class ArticlesController implements ControllerProviderInterface
         $articlesController->post('/delete/{id}', array($this, 'deleteAction'));
         $articlesController->match('/delete/{id}', array($this, 'deleteAction'))
             ->bind('articles_delete');
-        $articlesController->match('/delete/{id}/', array($this, 'deleteAction'));
+        $articlesController->
+        match('/delete/{id}/', array($this, 'deleteAction'));
         $articlesController->get('/view/{id}', array($this, 'viewAction'))
             ->bind('articles_view');
         $articlesController->get('/view/{id}/', array($this, 'viewAction'));
@@ -129,7 +130,8 @@ class ArticlesController implements ControllerProviderInterface
         try {
             $id = (int)$request->get('id', null);
             $this->view['article'] = $this->_model->getArticle($id);
-            $this->view['comments'] = $this->_comments_model->getCommentsList($id);
+            $this->view['comments'] =
+                $this->_comments_model->getCommentsList($id);
             $this->view['keywords'] = $this->_model->getArticleKeywords($id);
             $checkUser = $this->_users_model->_isLoggedIn($app);
         } catch (\PDOException $e){
@@ -212,7 +214,9 @@ class ArticlesController implements ControllerProviderInterface
 
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'success', 'content' => $app['translator']->trans('article_added')
+                            'type' => 'success',
+                            'content' =>
+                                $app['translator']->trans('article_added')
                         )
                     );
 
@@ -232,7 +236,8 @@ class ArticlesController implements ControllerProviderInterface
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
+                    'type' => 'danger',
+                    'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(
@@ -262,7 +267,8 @@ class ArticlesController implements ControllerProviderInterface
 
                 if (count($article)) {
 
-                    $form = $app['form.factory']->createBuilder('form', $article)
+                    $form = $app['form.factory']
+                        ->createBuilder('form', $article)
                         ->add(
                             'id', 'hidden',
                             array(
@@ -305,7 +311,8 @@ class ArticlesController implements ControllerProviderInterface
                         ->add(
                             'category_id', 'choice',
                             array(
-                                'label' => $app['translator']->trans('category'),
+                                'label' => $app['translator']
+                                    ->trans('category'),
                                 'choices' => $categories,
                                 'constraints' => array(
                                     new Assert\NotBlank(),
@@ -325,7 +332,9 @@ class ArticlesController implements ControllerProviderInterface
 
                         $app['session']->getFlashBag()->add(
                             'message', array(
-                                'type' => 'success', 'content' => $app['translator']->trans('article_edited')
+                                'type' => 'success',
+                                'content' => $app['translator']
+                                    ->trans('article_edited')
                             )
                         );
                         return $app->redirect(
@@ -340,7 +349,9 @@ class ArticlesController implements ControllerProviderInterface
                 } else {
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'warning', 'content' => $app['translator']->trans('article_not_found')
+                            'type' => 'warning',
+                            'content' => $app['translator']
+                                ->trans('article_not_found')
                         )
                     );
                     return $app->redirect(
@@ -356,7 +367,8 @@ class ArticlesController implements ControllerProviderInterface
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
+                    'type' => 'danger',
+                    'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(
@@ -366,6 +378,14 @@ class ArticlesController implements ControllerProviderInterface
         }
     }
 
+    /**
+     * Delete action.
+     *
+     * @access public
+     * @param Silex\Application $app Silex application
+     * @param Symfony\Component\HttpFoundation\Request $request Request object
+     * @return string Output
+     */
     public function deleteAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {

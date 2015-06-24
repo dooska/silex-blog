@@ -72,7 +72,8 @@ class CategoriesModel
     {
         $categories = $this->getAll();
         foreach ($categories as $category) {
-            $categoriesArray[$category['category_id']] = $category['category_name'];
+            $categoriesArray[$category['category_id']]
+                = $category['category_name'];
         }
         return $categoriesArray;
 
@@ -89,7 +90,9 @@ class CategoriesModel
     public function getCategory($id)
     {
         if (($id != '') && ctype_digit((string)$id)) {
-            $query = 'SELECT category_id, `category_name` FROM categories WHERE category_id= :id';
+            $query = 'SELECT category_id, `category_name`
+                    FROM categories
+                    WHERE category_id= :id';
             $statement = $this->_db->prepare($query);
             $statement->bindValue('id', $id, \PDO::PARAM_INT);
             $statement->execute();
@@ -110,9 +113,10 @@ class CategoriesModel
     public function getCategoryArticles($id)
     {
         if (($id != '') && ctype_digit((string)$id)) {
-            $query = 'SELECT articles.article_id, articles.title,articles.content, articles.category_id
+            $query = 'SELECT articles.article_id, articles.title,
+                      articles.content, articles.category_id
                       FROM articles
-                    WHERE articles.category_id = ?';
+                      WHERE articles.category_id = ?';
             $result = $this->_db->fetchAll($query, array($id));
             return $result;
         }
@@ -169,7 +173,7 @@ class CategoriesModel
         return (($page < 1) || ($page > $pagesCount)) ? 1 : $page;
     }
 
-    /* Save category.
+    /** Save category.
     *
     * @access public
     * @param array $category Categories data
@@ -183,13 +187,20 @@ class CategoriesModel
             // update record
             $id = $category['id'];
             unset($category['id']);
-            return $this->_db->update('categories', $category, array('category_id' => $id));
+            return $this->_db->update(
+                'categories', $category, array('category_id' => $id));
         } else {
             // add new record
             return $this->_db->insert('categories', $category);
         }
     }
 
+    /** Removes category.
+     *
+     * @access public
+     * @param array $article Articles data
+     * @retun mixed Result
+     */
     public function removeCategory($category)
     {
         if (isset($category['id'])
@@ -199,10 +210,17 @@ class CategoriesModel
             $id = $category['id'];
             unset($category['id']);
             $this->removeCategoryArticles($category['id']);
-            return $this->_db->delete('categories', array('category_id' => $id));
+            return $this->_db->
+            delete('categories', array('category_id' => $id));
         }
     }
 
+    /** Removes category articles.
+     *
+     * @access public
+     * @param array $article Articles data
+     * @retun mixed Result
+     */
     protected function removeCategoryArticles($id)
     {
         $query = 'DELETE FROM `articles` WHERE `category_id`=?';

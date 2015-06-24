@@ -91,6 +91,14 @@ class UsersController implements ControllerProviderInterface
     public function indexAction(Application $app, Request $request)
     {}
 
+    /**
+     * View action.
+     *
+     * @access public
+     * @param Silex\Application $app Silex application
+     * @param Symfony\Component\HttpFoundation\Request $request Request object
+     * @return string Output
+     */
     public function viewAction(Application $app, Request $request)
     {
         try {
@@ -124,6 +132,14 @@ class UsersController implements ControllerProviderInterface
         }
     }
 
+    /**
+     * Delete action.
+     *
+     * @access public
+     * @param Silex\Application $app Silex application
+     * @param Symfony\Component\HttpFoundation\Request $request Request object
+     * @return string Output
+     */
     public function deleteAction(Application $app, Request $request)
     {
         try {
@@ -154,7 +170,8 @@ class UsersController implements ControllerProviderInterface
                         $app['session']->getFlashBag()->add(
                             'message', array(
                                 'type' => 'success',
-                                'content' => $app['translator']->trans('user_deleted')
+                                'content' => $app['translator']
+                                    ->trans('user_deleted')
 
                             )
                         );

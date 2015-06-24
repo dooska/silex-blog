@@ -230,11 +230,6 @@ class UsersModel
         }
     }
 
-
-
-
-
-
     /**
      * @param $app
      * @access public
@@ -270,7 +265,7 @@ class UsersModel
     }
 
     /**
-     * Gets user by login.
+     * Gets user info.
      *
      * @param string $login
      *
@@ -286,7 +281,7 @@ class UsersModel
 
 
     /**
-     * Changes information about user
+     * Delete user
      *
      * @param $data
      */

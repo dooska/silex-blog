@@ -77,7 +77,9 @@ class ArticlesModel
     public function getArticle($id)
     {
         if (($id != '') && ctype_digit((string)$id)) {
-            $query = 'SELECT article_id, title, content FROM articles WHERE article_id= :id';
+            $query = 'SELECT article_id, title, content
+                      FROM articles
+                      WHERE article_id= :id';
             $statement = $this->_db->prepare($query);
             $statement->bindValue('id', $id, \PDO::PARAM_INT);
             $statement->execute();
@@ -99,7 +101,9 @@ class ArticlesModel
      */
     public function getArticlesPage($page, $limit)
     {
-        $query = 'SELECT article_id, title, content, categories.category_id, categories.category_name
+        $query = 'SELECT article_id,
+                  title, content, categories.category_id,
+                  categories.category_name
                   FROM articles
                   JOIN categories
                   ON articles.category_id = categories.category_id';
@@ -142,7 +146,7 @@ class ArticlesModel
         return (($page < 1) || ($page > $pagesCount)) ? 1 : $page;
     }
 
-    /* Save article.
+    /** Save article.
     *
     * @access public
     * @param array $article Articles data
@@ -156,13 +160,20 @@ class ArticlesModel
             // update record
             $id = $article['id'];
             unset($article['id']);
-            return $this->_db->update('articles', $article, array('article_id' => $id));
+            return $this->_db->update(
+                'articles', $article, array('article_id' => $id));
         } else {
             // add new record
             return $this->_db->insert('articles', $article);
         }
     }
 
+    /** Remove article.
+     *
+     * @access public
+     * @param array $article Articles data
+     * @retun mixed Result
+     */
     public function removeArticle($article)
     {
         if (isset($article['id'])
@@ -174,6 +185,13 @@ class ArticlesModel
             return $this->_db->delete('articles', array('article_id' => $id));
         }
     }
+
+    /** Checks article id.
+     *
+     * @access public
+     * @param array $article Articles data
+     * @return mixed
+     */
     public function checkArticleId($article_id)
     {
         $sql = 'SELECT * FROM articles WHERE article_id=?';
@@ -186,9 +204,18 @@ class ArticlesModel
         }
     }
 
+    /** Get keywords for article.
+     *
+     * @access public
+     * @param array $article Articles data
+     * @retun mixed Result
+     */
     public function getArticleKeywords($article_id)
     {
-        $query = 'SELECT DISTINCT article_keywords.id, keywords.keyword_id, keywords.word FROM article_keywords
+        $query = 'SELECT DISTINCT article_keywords.id,
+                    keywords.keyword_id,
+                    keywords.word
+        FROM article_keywords
         JOIN keywords
         ON article_keywords.keyword_id = keywords.keyword_id
         WHERE article_keywords.article_id = ?';

@@ -159,7 +159,8 @@ class RegistrationController implements ControllerProviderInterface
                         $app['session']->getFlashBag()->add(
                             'message', array(
                                 'type' => 'warning',
-                                'content' => $app['translator']->trans('login_not_available')
+                                'content' => $app['translator']
+                                    ->trans('login_not_available')
                             )
                         );
                         return $app['twig']->render(
@@ -172,7 +173,8 @@ class RegistrationController implements ControllerProviderInterface
                     $app['session']->getFlashBag()->add(
                         'message', array(
                             'type' => 'warning',
-                            'content' => $app['translator']->trans('passwords_differ')
+                            'content' => $app['translator']
+                                ->trans('passwords_differ')
                         )
                     );
                     return $app['twig']->render(

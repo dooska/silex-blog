@@ -89,14 +89,22 @@ class CommentsController implements ControllerProviderInterface
         $commentsController->post('/delete/{id}', array($this, 'deleteAction'));
         $commentsController->match('/delete/{id}', array($this, 'deleteAction'))
             ->bind('comments_delete');
-        $commentsController->match('/delete/{id}/', array($this, 'deleteAction'));
+        $commentsController
+            ->match('/delete/{id}/', array($this, 'deleteAction'));
         $commentsController->get('/view/{id}', array($this, 'viewAction'))
             ->bind('comments_view');
         $commentsController->get('/view/{id}/', array($this, 'viewAction'));
         return $commentsController;
     }
 
-
+    /**
+     * Add action.
+     *
+     * @access public
+     * @param Silex\Application $app Silex application
+     * @param Symfony\Component\HttpFoundation\Request $request Request object
+     * @return string Output
+     */
     public function addAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_USER')) {
@@ -119,7 +127,8 @@ class CommentsController implements ControllerProviderInterface
                         'article_id' => $article_id,
                         'user_id' => (int)$user_id,
                     );
-                    $form = $app['form.factory']->createBuilder(new CommentForm(), $data)
+                    $form = $app['form.factory']
+                        ->createBuilder(new CommentForm(), $data)
                         ->getForm();
 
                     $form->handleRequest($request);
@@ -131,11 +140,14 @@ class CommentsController implements ControllerProviderInterface
                         $app['session']->getFlashBag()->add(
                             'message', array(
                                 'type' => 'success',
-                                'content' => $app['translator']->trans('comment_added')                            )
+                                'content' => $app['translator']
+                                    ->trans('comment_added')
+                            )
                         );
                         return $app->redirect(
                             $app['url_generator']->generate(
-                                'articles_view', array('id' => $data['article_id'])
+                                'articles_view',
+                                array('id' => $data['article_id'])
                             ), 301
                         );
 
@@ -150,7 +162,8 @@ class CommentsController implements ControllerProviderInterface
                     $app['session']->getFlashBag()->add(
                         'message', array(
                             'type' => 'danger',
-                            'content' => $app['translator']->trans('comment_not_found')
+                            'content' => $app['translator']
+                                ->trans('comment_not_found')
                         )
                     );
                     return $app->redirect(
@@ -160,7 +173,8 @@ class CommentsController implements ControllerProviderInterface
                     );
                 }
             } catch (\PDOException $e) {
-                $app->abort(500, $app['translator']->trans('An error occurred, please try again later'));
+                $app->abort(500, $app['translator']
+                    ->trans('An error occurred, please try again later'));
             }
         } else {
             $app['session']->getFlashBag()->add(
@@ -203,7 +217,8 @@ class CommentsController implements ControllerProviderInterface
 
                     if (count($comment)) {
 
-                        $form = $app['form.factory']->createBuilder(new CommentForm(), $comment)
+                        $form = $app['form.factory']
+                            ->createBuilder(new CommentForm(), $comment)
                             ->getForm();
 
                         $form->handleRequest($request);
@@ -221,7 +236,8 @@ class CommentsController implements ControllerProviderInterface
                             );
                             return $app->redirect(
                                 $app['url_generator']->generate(
-                                    'articles_view', array('id' => $comment['article_id'])
+                                    'articles_view',
+                                    array('id' => $comment['article_id'])
                                 ), 301
                             );
 
@@ -264,7 +280,8 @@ class CommentsController implements ControllerProviderInterface
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
+                    'type' => 'danger',
+                    'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(
@@ -300,7 +317,8 @@ class CommentsController implements ControllerProviderInterface
                     $data = array();
 
                     if (count($comment)) {
-                        $form = $app['form.factory']->createBuilder('form', $data)
+                        $form = $app['form.factory']
+                            ->createBuilder('form', $data)
                             ->add(
                                 'comment_id', 'hidden', array(
                                     'data' => $id,
@@ -320,12 +338,14 @@ class CommentsController implements ControllerProviderInterface
                                 $app['session']->getFlashBag()->add(
                                     'message', array(
                                         'type' => 'success',
-                                        'content' => $app['translator']->trans('comment_deleted')
+                                        'content' => $app['translator']
+                                            ->trans('comment_deleted')
                                     )
                                 );
                                 return $app->redirect(
                                     $app['url_generator']->generate(
-                                        'articles_view', array('id' => $comment['article_id'])
+                                        'articles_view',
+                                        array('id' => $comment['article_id'])
                                     ), 301
                                 );
 
@@ -346,7 +366,8 @@ class CommentsController implements ControllerProviderInterface
                         $app['session']->getFlashBag()->add(
                             'message', array(
                                 'type' => 'danger',
-                                'content' => $app['translator']->trans('comment_not_found')
+                                'content' => $app['translator']
+                                    ->trans('comment_not_found')
                             )
                         );
                         return $app->redirect(
@@ -359,7 +380,8 @@ class CommentsController implements ControllerProviderInterface
                     $app['session']->getFlashBag()->add(
                         'message', array(
                             'type' => 'danger',
-                            'content' => $app['translator']->trans('comment_not_found')
+                            'content' => $app['translator']
+                                ->trans('comment_not_found')
                         )
                     );
                     return $app->redirect(
@@ -377,7 +399,8 @@ class CommentsController implements ControllerProviderInterface
         else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
+                    'type' => 'danger', 'content' => $app['translator']
+                        ->trans('no_rights')
                 )
             );
             return $app->redirect(

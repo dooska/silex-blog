@@ -303,6 +303,14 @@ class KeywordsController implements ControllerProviderInterface
         }
     }
 
+    /**
+     * Delete action.
+     *
+     * @access public
+     * @param Silex\Application $app Silex application
+     * @param Symfony\Component\HttpFoundation\Request $request Request object
+     * @return string Output
+     */
     public function deleteAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
@@ -384,6 +392,14 @@ class KeywordsController implements ControllerProviderInterface
         }
     }
 
+    /**
+     * Connect action.
+     *
+     * @access public
+     * @param Silex\Application $app Silex application
+     * @param Symfony\Component\HttpFoundation\Request $request Request object
+     * @return string Output
+     */
     public function connectAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
@@ -470,6 +486,15 @@ class KeywordsController implements ControllerProviderInterface
         }
     }
 
+
+    /**
+     * Disconnect action.
+     *
+     * @access public
+     * @param Silex\Application $app Silex application
+     * @param Symfony\Component\HttpFoundation\Request $request Request object
+     * @return string Output
+     */
     public function disconnectAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
@@ -477,7 +502,8 @@ class KeywordsController implements ControllerProviderInterface
 
 
                 $record_id = (int)$request->get('id', 0);
-                $checkRecordId = $this->_model->checkIfConnectionExists($record_id);
+                $checkRecordId = $this->_model
+                    ->checkIfConnectionExists($record_id);
                 $article_id = $checkRecordId['article_id'];
 
                 if ($checkRecordId) {
@@ -497,31 +523,37 @@ class KeywordsController implements ControllerProviderInterface
                             $app['session']->getFlashBag()->add(
                                 'message', array(
                                     'type' => 'success',
-                                    'content' => $app['translator']->trans('keyword_deleted')
+                                    'content' => $app['translator']
+                                        ->trans('keyword_deleted')
                                 )
                             );
                             return $app->redirect(
                                 $app['url_generator']->generate(
-                                    'articles_view',array('id' => (int)$article_id)
+                                    'articles_view',
+                                    array('id' => (int)$article_id)
                                 ), 301
                             );
 
                         } else {
                             return $app->redirect(
                                 $app['url_generator']->generate(
-                                    'articles_view',array('id' => (int)$article_id)
+                                    'articles_view',
+                                    array('id' => (int)$article_id)
                                 ), 301
                             );
                         }
                     }
-                    return $app['twig']->render('keywords/disconnect.twig', array(
+                    return $app['twig']->render('keywords/disconnect.twig',
+                        array(
                             'form' => $form->createView()
                         )
                     );
                 } else {
                     $app['session']->getFlashBag()->add(
                         'message', array(
-                            'type' => 'warning', 'content' => $app['translator']->trans('article_not_found')
+                            'type' => 'warning',
+                            'content' => $app['translator']
+                                ->trans('article_not_found')
                         )
                     );
                     return $app->redirect(
@@ -530,13 +562,15 @@ class KeywordsController implements ControllerProviderInterface
                     );
                 }
             } catch (\PDOException $e){
-                $app->abort(404, $app['translator']->trans('article_not_found'));
+                $app->abort(404, $app['translator']
+                    ->trans('article_not_found'));
             }
 
         } else {
             $app['session']->getFlashBag()->add(
                 'message', array(
-                    'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
+                    'type' => 'danger',
+                    'content' => $app['translator']->trans('no_rights')
                 )
             );
             return $app->redirect(

@@ -91,7 +91,9 @@ class KeywordsModel
     public function getKeyword($id)
     {
         if (($id != '') && ctype_digit((string)$id)) {
-            $query = 'SELECT keyword_id, `word` FROM keywords WHERE keyword_id= :id';
+            $query = 'SELECT keyword_id, `word`
+                        FROM keywords
+                        WHERE keyword_id= :id';
             $statement = $this->_db->prepare($query);
             $statement->bindValue('id', $id, \PDO::PARAM_INT);
             $statement->execute();
@@ -112,7 +114,9 @@ class KeywordsModel
     public function getKeywordArticles($id)
     {
         if (($id != '') && ctype_digit((string)$id)) {
-            $query = 'SELECT articles.article_id, articles.title, articles.content, article_keywords.article_id, article_keywords.keyword_id
+            $query = 'SELECT articles.article_id, articles.title,
+                        articles.content, article_keywords.article_id,
+                        article_keywords.keyword_id
                         FROM articles
                         JOIN article_keywords
                         ON articles.article_id = article_keywords.article_id
@@ -173,7 +177,7 @@ class KeywordsModel
         return (($page < 1) || ($page > $pagesCount)) ? 1 : $page;
     }
 
-    /* Save keyword.
+    /** Save keyword.
     *
     * @access public
     * @param array $keyword Keywords data
@@ -187,13 +191,20 @@ class KeywordsModel
             // update record
             $id = $keyword['id'];
             unset($keyword['id']);
-            return $this->_db->update('keywords', $keyword, array('keyword_id' => $id));
+            return $this->_db->
+            update('keywords', $keyword, array('keyword_id' => $id));
         } else {
             // add new record
             return $this->_db->insert('keywords', $keyword);
         }
     }
 
+    /** Removes keyword.
+     *
+     * @access public
+     * @param array $keyword Keyword
+     * @retun mixed Result
+     */
     public function removeKeyword($keyword)
     {
         if (isset($keyword['id'])
@@ -207,34 +218,68 @@ class KeywordsModel
         }
     }
 
+    /** Removes article with keyword..
+     *
+     * @access protected
+     * @param array $id Article id
+     */
     protected function removeKeywordArticles($id)
     {
         $query = 'DELETE FROM `article_keywords` WHERE `keyword_id`=?';
         $this->_db->executeQuery($query, array($id));
     }
 
+    /** Removes article with keyword.
+     *
+     * @access public
+     * @param array $data Articles data
+     * @return mixed Result
+     */
     public function checkIfKeywordForArticleExist($data)
     {
         $query = 'SELECT article_id, keyword_id
                   FROM `article_keywords`
                   WHERE `article_id` = ? AND `keyword_id` = ?';
-        $result = $this->_db->fetchAssoc($query, array((int)$data['article_id'], (int)$data['keyword_id']));
+        $result = $this->_db->
+        fetchAssoc($query, array(
+            (int)$data['article_id'], (int)$data['keyword_id']));
         return $result;
     }
 
+    /** Connects article with keyword.
+     *
+     * @access public
+     * @param array $data Articles data
+     * @return mixed Result
+     */
     public function connectKeywordWithArticle($data)
     {
-        $query = 'INSERT INTO `article_keywords` (`article_id`, `keyword_id`) VALUES (?, ?)';
-        $result = $this->_db->executeQuery($query, array((int)$data['article_id'], (int)$data['keyword_id']));
+        $query = 'INSERT INTO `article_keywords` (`article_id`, `keyword_id`)
+                  VALUES (?, ?)';
+        $result = $this->_db->
+        executeQuery($query, array(
+            (int)$data['article_id'], (int)$data['keyword_id']));
         return $result;
     }
 
+    /** Disconnects article with keyword.
+     *
+     * @access public
+     * @param array $data Articles data
+     * @return mixed Result
+     */
     public function disconnectKeywordAndArticle($data)
     {
         $query = 'DELETE FROM `article_keywords` WHERE `id`=?';
         $this->_db->executeQuery($query, array($data['record_id']));
     }
 
+    /** Check if keyword exists in database.
+     *
+     * @access public
+     * @param array $data Articles data
+     * @return mixed Result
+     */
     public function checkIfKeywordExists($data)
     {
         $query = 'SELECT keyword_id
@@ -244,6 +289,12 @@ class KeywordsModel
         return $result;
     }
 
+    /** Check if connection exists.
+     *
+     * @access public
+     * @param array $data Articles data
+     * @return mixed Result
+     */
     public function checkIfConnectionExists($record_id)
     {
         $query = 'SELECT * FROM `article_keywords` WHERE id = ?';
