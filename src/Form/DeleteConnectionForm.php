@@ -41,7 +41,9 @@ class DeleteConnectionForm extends AbstractType
         $id = $options['data']['record_id'];
         return  $builder
             ->add(
-                'id', 'hidden', array(
+                'id',
+                'hidden',
+                array(
                     'data' => $id,
                 )
             )

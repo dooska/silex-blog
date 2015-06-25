@@ -40,7 +40,8 @@ class KeywordAddForm extends AbstractType
     {
         return $builder
             ->add(
-                'word', 'text',
+                'word',
+                'text',
                 array(
                     'label' => 'Słowo',
                     'constraints' => array(
@@ -66,5 +67,4 @@ class KeywordAddForm extends AbstractType
     {
         return 'articleKeywordForm';
     }
-
 }

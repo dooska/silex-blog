@@ -27,9 +27,9 @@ class UsersModel
      * Silex application object
      *
      * @access protected
-     * @var $_app Silex\Application
+     * @var $app Silex\Application
      */
-    protected $_app;
+    protected $app;
 
     /**
      * Db object.
@@ -37,7 +37,7 @@ class UsersModel
      * @access protected
      * @var Silex\Provider\DoctrineServiceProvider $db
      */
-    protected $_db;
+    protected $db;
 
     /**
      * Object constructor.
@@ -47,8 +47,8 @@ class UsersModel
      */
     public function __construct(Application $app)
     {
-        $this->_app = $app;
-        $this->_db = $app['db'];
+        $this->app = $app;
+        $this->db = $app['db'];
     }
 
     /**
@@ -66,8 +66,9 @@ class UsersModel
         $query = 'INSERT INTO `users`
                   (`login`, `email`, `password`, `role_id`)
                   VALUES (?, ?, ?, ?)';
-        $this->_db->executeQuery(
-            $query, array(
+        $this->db->executeQuery(
+            $query,
+            array(
                 $data['login'],
                 $data['email'],
                 $password,
@@ -129,7 +130,7 @@ class UsersModel
               WHERE
                 `login` = :login
             ';
-            $statement = $this->_db->prepare($query);
+            $statement = $this->db->prepare($query);
             $statement->bindValue('login', $login, \PDO::PARAM_STR);
             $statement->execute();
             $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
@@ -162,7 +163,7 @@ class UsersModel
                 WHERE
                     `users`.`id` = :user_id
                 ';
-            $statement = $this->_db->prepare($query);
+            $statement = $this->db->prepare($query);
             $statement->bindValue('user_id', $userId, \PDO::PARAM_INT);
             $statement->execute();
             $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
@@ -221,7 +222,7 @@ class UsersModel
      * @access public
      * @return bool
      */
-    public function _isLoggedIn(Application $app)
+    public function isLoggedIn(Application $app)
     {
         if ('anon.' !== $user = $app['security']->getToken()->getUser()) {
             return true;
@@ -275,7 +276,7 @@ class UsersModel
     public function getUserInfo($login)
     {
         $sql = 'SELECT id, login, email, role_id FROM users WHERE login = ?';
-        return $this->_db->fetchAssoc($sql, array((string) $login));
+        return $this->db->fetchAssoc($sql, array((string) $login));
     }
 
 
@@ -288,8 +289,6 @@ class UsersModel
     public function removeUser($data)
     {
         $query = 'DELETE FROM users WHERE id = ?';
-        return $this->_db->executeQuery($query, array((int)($data['id'])));
+        return $this->db->executeQuery($query, array((int)($data['id'])));
     }
-
-
 }

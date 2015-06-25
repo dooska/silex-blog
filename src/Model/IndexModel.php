@@ -33,9 +33,9 @@ class IndexModel
      * Database access object.
      *
      * @access protected
-     * @var $_db Doctrine\DBAL
+     * @var $db Doctrine\DBAL
      */
-    protected $_db;
+    protected $db;
 
     /**
      * Class constructor.
@@ -46,7 +46,7 @@ class IndexModel
      */
     public function __construct(Application $app)
     {
-        $this->_db = $app['db'];
+        $this->db = $app['db'];
     }
 
     /**
@@ -54,5 +54,4 @@ class IndexModel
      *
      * @return mixed
      */
-
 }

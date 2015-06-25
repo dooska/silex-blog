@@ -33,9 +33,9 @@ class ArticlesModel
      * Database access object.
      *
      * @access protected
-     * @var $_db Doctrine\DBAL
+     * @var $db Doctrine\DBAL
      */
-    protected $_db;
+    protected $db;
 
     /**
      * Class constructor.
@@ -46,7 +46,7 @@ class ArticlesModel
      */
     public function __construct(Application $app)
     {
-        $this->_db = $app['db'];
+        $this->db = $app['db'];
     }
 
     /**
@@ -63,7 +63,7 @@ class ArticlesModel
     public function getAll()
     {
         $query = 'SELECT article_id, title, content FROM articles';
-        $result = $this->_db->fetchAll($query);
+        $result = $this->db->fetchAll($query);
         return !$result ? array() : $result;
     }
 
@@ -80,7 +80,7 @@ class ArticlesModel
             $query = 'SELECT article_id, title, content
                       FROM articles
                       WHERE article_id= :id';
-            $statement = $this->_db->prepare($query);
+            $statement = $this->db->prepare($query);
             $statement->bindValue('id', $id, \PDO::PARAM_INT);
             $statement->execute();
             $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
@@ -107,7 +107,7 @@ class ArticlesModel
                   FROM articles
                   JOIN categories
                   ON articles.category_id = categories.category_id';
-        $statement = $this->_db->prepare($query);
+        $statement = $this->db->prepare($query);
         $statement->bindValue('start', ($page-1)*$limit, \PDO::PARAM_INT);
         $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
         $statement->execute();
@@ -126,7 +126,7 @@ class ArticlesModel
     {
         $pagesCount = 0;
         $sql = 'SELECT COUNT(*) as pages_count FROM articles';
-        $result = $this->_db->fetchAssoc($sql);
+        $result = $this->db->fetchAssoc($sql);
         if ($result) {
             $pagesCount =  ceil($result['pages_count']/$limit);
         }
@@ -160,11 +160,16 @@ class ArticlesModel
             // update record
             $id = $article['id'];
             unset($article['id']);
-            return $this->_db->update(
-                'articles', $article, array('article_id' => $id));
+            return $this->db->update(
+                'articles',
+                $article,
+                array(
+                    'article_id' => $id
+                )
+            );
         } else {
             // add new record
-            return $this->_db->insert('articles', $article);
+            return $this->db->insert('articles', $article);
         }
     }
 
@@ -182,7 +187,7 @@ class ArticlesModel
             // update record
             $id = $article['id'];
             unset($article['id']);
-            return $this->_db->delete('articles', array('article_id' => $id));
+            return $this->db->delete('articles', array('article_id' => $id));
         }
     }
 
@@ -195,7 +200,7 @@ class ArticlesModel
     public function checkArticleId($article_id)
     {
         $sql = 'SELECT * FROM articles WHERE article_id=?';
-        $result = $this->_db->fetchAll($sql, array($article_id));
+        $result = $this->db->fetchAll($sql, array($article_id));
 
         if ($result) {
             return true;
@@ -219,11 +224,13 @@ class ArticlesModel
         JOIN keywords
         ON article_keywords.keyword_id = keywords.keyword_id
         WHERE article_keywords.article_id = ?';
-        $result = $this->_db->fetchAll($query, array($article_id));
+        $result = $this->db->fetchAll(
+            $query,
+            array(
+                $article_id
+            )
+        );
         return $result;
 
     }
-
-
-
 }

@@ -33,9 +33,9 @@ class CommentsModel
      * Database access object.
      *
      * @access protected
-     * @var $_db Doctrine\DBAL
+     * @var $db Doctrine\DBAL
      */
-    protected $_db;
+    protected $db;
 
     /**
      * Class constructor.
@@ -46,7 +46,7 @@ class CommentsModel
      */
     public function __construct(Application $app)
     {
-        $this->_db = $app['db'];
+        $this->db = $app['db'];
     }
 
     /**
@@ -60,7 +60,7 @@ class CommentsModel
     public function getComment($idcomment)
     {
         $sql = 'SELECT * FROM comments WHERE comment_id = ? LIMIT 1';
-        return $this->_db->fetchAssoc($sql, array($idcomment));
+        return $this->db->fetchAssoc($sql, array($idcomment));
     }
 
     /**
@@ -75,7 +75,7 @@ class CommentsModel
     public function getCommentsList($id)
     {
         $sql = 'SELECT * FROM comments WHERE article_id = ?';
-        return $this->_db->fetchAll($sql, array($id));
+        return $this->db->fetchAll($sql, array($id));
     }
 
     /**
@@ -91,7 +91,7 @@ class CommentsModel
         $sql = 'INSERT INTO comments
             (comment_content, published_date, article_id, user_id)
             VALUES (?,?,?,?)';
-        $this->_db
+        $this->db
             ->executeQuery(
                 $sql,
                 array(
@@ -118,8 +118,9 @@ class CommentsModel
             $sql = 'UPDATE comments
                 SET comment_content = ?, published_date = ?
             WHERE comment_id = ?';
-            $this->_db->executeQuery(
-                $sql, array(
+            $this->db->executeQuery(
+                $sql,
+                array(
                     $data['comment_content'],
                     $data['published_date'],
                     $data['comment_id']
@@ -139,7 +140,7 @@ class CommentsModel
     public function deleteComment($data)
     {
         $sql = 'DELETE FROM `comments` WHERE `comment_id`= ?';
-        $this->_db->executeQuery($sql, array($data['comment_id']));
+        $this->db->executeQuery($sql, array($data['comment_id']));
     }
 
 
@@ -154,7 +155,7 @@ class CommentsModel
     public function checkCommentId($idcomment)
     {
         $sql = 'SELECT * FROM comments WHERE comment_id=?';
-        $result = $this->_db->fetchAll($sql, array($idcomment));
+        $result = $this->db->fetchAll($sql, array($idcomment));
 
         if ($result) {
             return true;

@@ -32,7 +32,7 @@ class RegistrationController implements ControllerProviderInterface
      */
     protected $view = array();
 
-    protected $_model;
+    protected $model;
 
     /**
      * Connection
@@ -44,7 +44,7 @@ class RegistrationController implements ControllerProviderInterface
      */
     public function connect(Application $app)
     {
-        $this->_model = new UsersModel($app);
+        $this->model = new UsersModel($app);
         $registrationController = $app['controllers_factory'];
         $registrationController->match('/', array($this, 'register'))
             ->bind('register');
@@ -64,12 +64,13 @@ class RegistrationController implements ControllerProviderInterface
      */
     public function register(Application $app, Request $request)
     {
-        try
-        {
+        try {
             $data = array();
             $form = $app['form.factory']->createBuilder('form', $data)
                 ->add(
-                    'login', 'text', array(
+                    'login',
+                    'text',
+                    array(
                         'constraints' => array(
                             new Assert\NotBlank()
                         ),
@@ -79,7 +80,9 @@ class RegistrationController implements ControllerProviderInterface
                     )
                 )
                 ->add(
-                    'email', 'text', array(
+                    'email',
+                    'text',
+                    array(
                         'label' => 'Email',
                         'constraints' => array(
                             new Assert\NotBlank(),
@@ -95,7 +98,9 @@ class RegistrationController implements ControllerProviderInterface
                     )
                 )
                 ->add(
-                    'password', 'password', array(
+                    'password',
+                    'password',
+                    array(
                         'label' => $app['translator']->trans('password'),
                         'constraints' => array(
                             new Assert\NotBlank()
@@ -106,7 +111,9 @@ class RegistrationController implements ControllerProviderInterface
                     )
                 )
                 ->add(
-                    'confirm_password', 'password', array(
+                    'confirm_password',
+                    'password',
+                    array(
                         'label' => $app['translator']->trans('password_confirmation'),
                         'constraints' => array(
                             new Assert\NotBlank()
@@ -134,17 +141,15 @@ class RegistrationController implements ControllerProviderInterface
                     ->escape($data['confirm_password']);
 
                 if ($data['password'] === $data['confirm_password']) {
-
                     $password = $app['security.encoder.digest']
                         ->encodePassword($data['password'], '');
 
-                    $checkLogin = $this->_model->getUserByLogin(
+                    $checkLogin = $this->model->getUserByLogin(
                         $data['login']
                     );
 
                     if (!$checkLogin) {
-
-                        $this->_model->register(
+                        $this->model->register(
                             $data,
                             $password
                         );
@@ -152,33 +157,38 @@ class RegistrationController implements ControllerProviderInterface
                             $app['url_generator']
                                 ->generate(
                                     '/register/success'
-                                ), 301
+                                ),
+                            301
                         );
 
                     } else {
                         $app['session']->getFlashBag()->add(
-                            'message', array(
+                            'message',
+                            array(
                                 'type' => 'warning',
                                 'content' => $app['translator']
                                     ->trans('login_not_available')
                             )
                         );
                         return $app['twig']->render(
-                            'users/register.twig', array(
+                            'users/register.twig',
+                            array(
                                 'form' => $form->createView()
                             )
                         );
                     }
                 } else {
                     $app['session']->getFlashBag()->add(
-                        'message', array(
+                        'message',
+                        array(
                             'type' => 'warning',
                             'content' => $app['translator']
                                 ->trans('passwords_differ')
                         )
                     );
                     return $app['twig']->render(
-                        'users/register.twig', array(
+                        'users/register.twig',
+                        array(
                             'form' => $form->createView()
                         )
                     );
@@ -186,14 +196,13 @@ class RegistrationController implements ControllerProviderInterface
             }
 
             return $app['twig']->render(
-                'users/register.twig', array(
+                'users/register.twig',
+                array(
                     'form' => $form->createView(),
                     'data' => $data
                 )
             );
-        }
-        catch (\PDOException $e)
-        {
+        } catch (\PDOException $e) {
             $app->abort(500, $app['translator']
                 ->trans('error_occured'));
         }
@@ -212,7 +221,8 @@ class RegistrationController implements ControllerProviderInterface
             'auth_login'
         );
         return $app['twig']->render(
-            'users/successfulRegistration.twig', array(
+            'users/successfulRegistration.twig',
+            array(
                 'login_link' => $link
             )
         );

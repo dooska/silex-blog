@@ -40,10 +40,10 @@ class CategoriesController implements ControllerProviderInterface
     /**
      * Category Model object.
      *
-     * @var $_model
+     * @var $model
      * @access protected
      */
-    protected $_model;
+    protected $model;
 
     /**
      *
@@ -54,7 +54,7 @@ class CategoriesController implements ControllerProviderInterface
      */
     public function connect(Application $app)
     {
-        $this->_model = new CategoriesModel($app);
+        $this->model = new CategoriesModel($app);
         $categoriesController = $app['controllers_factory'];
         $categoriesController->post('/add', array($this, 'addAction'));
         $categoriesController->match('/add', array($this, 'addAction'))
@@ -77,7 +77,7 @@ class CategoriesController implements ControllerProviderInterface
         $categoriesController->get('/view/{id}/', array($this, 'viewAction'));
         $categoriesController->get('/index', array($this, 'indexAction'));
         $categoriesController->get('/index/', array($this, 'indexAction'))
-            ->bind('categories_index');;
+            ->bind('categories_index');
 //        $categoriesController->get('/{page}', array($this, 'indexAction'))
 //            ->value('page', 1)->bind('categories_index');
         return $categoriesController;
@@ -94,12 +94,11 @@ class CategoriesController implements ControllerProviderInterface
     public function indexAction(Application $app, Request $request)
     {
         try {
-
             $pageLimit = 10;
             $page = (int) $request->get('page', 1);
-            $pagesCount = $this->_model->countCategoriesPages($pageLimit);
-            $page = $this->_model->getCurrentPageNumber($page, $pagesCount);
-            $categories = $this->_model->getCategoriesPage($page, $pageLimit);
+            $pagesCount = $this->model->countCategoriesPages($pageLimit);
+            $page = $this->model->getCurrentPageNumber($page, $pagesCount);
+            $categories = $this->model->getCategoriesPage($page, $pageLimit);
         } catch (\PDOException $e) {
             $app->abort(404, $app['translator']->trans('categories_not_found'));
         }
@@ -120,10 +119,9 @@ class CategoriesController implements ControllerProviderInterface
     public function viewAction(Application $app, Request $request)
     {
         try {
-
             $id = (int)$request->get('id', null);
-            $this->view['category'] = $this->_model->getCategory($id);
-            $this->view['category_articles'] = $this->_model
+            $this->view['category'] = $this->model->getCategory($id);
+            $this->view['category_articles'] = $this->model
                 ->getCategoryArticles($id);
         } catch (\PDOException $e) {
             $app->abort(404, $app['translator']->trans('category_not_found'));
@@ -144,12 +142,10 @@ class CategoriesController implements ControllerProviderInterface
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
             try {
-
-                // default values:
-
                 $form = $app['form.factory']->createBuilder('form')
                     ->add(
-                        'category_name', 'text',
+                        'category_name',
+                        'text',
                         array(
                             'label' => $app['translator']
                                 ->trans('category_name'),
@@ -171,7 +167,8 @@ class CategoriesController implements ControllerProviderInterface
                     $categoriesModel->saveCategory($data);
 
                     $app['session']->getFlashBag()->add(
-                        'message', array(
+                        'message',
+                        array(
                             'type' => 'success',
                             'content' => $app['translator']
                                 ->trans('category_added')
@@ -187,10 +184,14 @@ class CategoriesController implements ControllerProviderInterface
             } catch (\PDOException $e) {
                 $app->abort(500, $app['translator']->trans('error_occured'));
             }
-            return $app['twig']->render('categories/add.twig', $this->view);
+            return $app['twig']->render(
+                'categories/add.twig',
+                $this->view
+            );
         } else {
             $app['session']->getFlashBag()->add(
-                'message', array(
+                'message',
+                array(
                     'type' => 'danger',
                     'content' => $app['translator']
                         ->trans('no_rights')
@@ -215,16 +216,15 @@ class CategoriesController implements ControllerProviderInterface
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
             try {
-
                 $id = (int) $request->get('id', 0);
-                $category = $this->_model->getCategory($id);
+                $category = $this->model->getCategory($id);
 
                 if (count($category)) {
-
                     $form = $app['form.factory']
                         ->createBuilder('form', $category)
                         ->add(
-                            'id', 'hidden',
+                            'id',
+                            'hidden',
                             array(
                                 'data' => $id,
                                 'constraints' => array(
@@ -234,7 +234,8 @@ class CategoriesController implements ControllerProviderInterface
                             )
                         )
                         ->add(
-                            'category_name', 'text',
+                            'category_name',
+                            'text',
                             array(
                                 'label' => $app['translator']
                                     ->trans('category_name'),
@@ -252,10 +253,11 @@ class CategoriesController implements ControllerProviderInterface
 
                     if ($form->isValid()) {
                         $data = $form->getData();
-                        $this->_model->saveCategory($data);
+                        $this->model->saveCategory($data);
 
                         $app['session']->getFlashBag()->add(
-                            'message', array(
+                            'message',
+                            array(
                                 'type' => 'success',
                                 'content' => $app['translator']
                                     ->trans('category_edited')
@@ -272,7 +274,8 @@ class CategoriesController implements ControllerProviderInterface
 
                 } else {
                     $app['session']->getFlashBag()->add(
-                        'message', array(
+                        'message',
+                        array(
                             'type' => 'warning',
                             'content' => $app['translator']
                                 ->trans('categories_not_found')
@@ -286,10 +289,14 @@ class CategoriesController implements ControllerProviderInterface
             } catch (\PDOException $e) {
                 $app->abort(500, $app['translator']->trans('error_occured'));
             }
-            return $app['twig']->render('categories/edit.twig', $this->view);
+            return $app['twig']->render(
+                'categories/edit.twig',
+                $this->view
+            );
         } else {
             $app['session']->getFlashBag()->add(
-                'message', array(
+                'message',
+                array(
                     'type' => 'danger',
                     'content' => $app['translator']->trans('no_rights')
                 )
@@ -313,7 +320,6 @@ class CategoriesController implements ControllerProviderInterface
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
             try {
-
                 $categoriesModel = new CategoriesModel($app);
                 $id = (int) $request->get('id', 0);
                 $category = $categoriesModel->getCategory($id);
@@ -322,7 +328,9 @@ class CategoriesController implements ControllerProviderInterface
                     $data = array();
                     $form = $app['form.factory']->createBuilder('form', $data)
                         ->add(
-                            'id', 'hidden', array(
+                            'id',
+                            'hidden',
+                            array(
                                 'data' => $id,
                             )
                         )
@@ -336,10 +344,11 @@ class CategoriesController implements ControllerProviderInterface
                         if ($form->get('Tak')->isClicked()) {
                             $data = $form->getData();
 
-                            $this->_model->removeCategory($data);
+                            $this->model->removeCategory($data);
 
                             $app['session']->getFlashBag()->add(
-                                'message', array(
+                                'message',
+                                array(
                                     'type' => 'success',
                                     'content' => $app['translator']
                                         ->trans('category_deleted')
@@ -348,14 +357,16 @@ class CategoriesController implements ControllerProviderInterface
                             return $app->redirect(
                                 $app['url_generator']->generate(
                                     'categories_index'
-                                ), 301
+                                ),
+                                301
                             );
 
                         } else {
                             return $app->redirect(
                                 $app['url_generator']->generate(
                                     'categories_index'
-                                ), 301
+                                ),
+                                301
                             );
                         }
                     }
@@ -365,7 +376,8 @@ class CategoriesController implements ControllerProviderInterface
 
                 } else {
                     $app['session']->getFlashBag()->add(
-                        'message', array(
+                        'message',
+                        array(
                             'type' => 'danger',
                             'content' => $app['translator']
                                 ->trans('article_not_found')
@@ -374,7 +386,8 @@ class CategoriesController implements ControllerProviderInterface
                     return $app->redirect(
                         $app['url_generator']->generate(
                             'categories_index'
-                        ), 301
+                        ),
+                        301
                     );
                 }
             } catch (\PDOException $e) {
@@ -383,7 +396,8 @@ class CategoriesController implements ControllerProviderInterface
             return $app['twig']->render('categories/delete.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
-                'message', array(
+                'message',
+                array(
                     'type' => 'danger',
                     'content' => $app['translator']->trans('no_rights')
                 )
@@ -393,6 +407,5 @@ class CategoriesController implements ControllerProviderInterface
                 301
             );
         }
-
     }
 }

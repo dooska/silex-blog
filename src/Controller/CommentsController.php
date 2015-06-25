@@ -43,26 +43,26 @@ class CommentsController implements ControllerProviderInterface
     /**
      * Comment Model object.
      *
-     * @var $_model
+     * @var $model
      * @access protected
      */
-    protected $_model;
+    protected $model;
 
     /**
      * Article Model object.
      *
-     * @var $_model
+     * @var $model
      * @access protected
      */
-    protected $_articles;
+    protected $articles;
 
     /**
      * User Model object.
      *
-     * @var $_model
+     * @var $model
      * @access protected
      */
-    protected $_user;
+    protected $user;
 
 
     /**
@@ -74,9 +74,9 @@ class CommentsController implements ControllerProviderInterface
      */
     public function connect(Application $app)
     {
-        $this->_model = new CommentsModel($app);
-        $this->_articles = new ArticlesModel($app);
-        $this->_user = new UsersModel($app);
+        $this->model = new CommentsModel($app);
+        $this->articles = new ArticlesModel($app);
+        $this->user = new UsersModel($app);
         $commentsController = $app['controllers_factory'];
         $commentsController->post('/add', array($this, 'addAction'));
         $commentsController->match('/add', array($this, 'addAction'))
@@ -108,17 +108,14 @@ class CommentsController implements ControllerProviderInterface
     public function addAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_USER')) {
-
             try {
-
                 $article_id = (int)$request->get('article_id');
 
-                $check = $this->_articles->checkArticleId($article_id);
+                $check = $this->articles->checkArticleId($article_id);
 
                 if ($check) {
-
-                    if ($this->_user->_isLoggedIn($app)) {
-                        $user_id = $this->_user->getIdCurrentUser($app);
+                    if ($this->user->_isLoggedIn($app)) {
+                        $user_id = $this->user->getIdCurrentUser($app);
                     } else {
                         $user_id = 0;
                     }
@@ -135,41 +132,54 @@ class CommentsController implements ControllerProviderInterface
 
                     if ($form->isValid()) {
                         $data = $form->getData();
-                        $model = $this->_model->addComment($data);
+                        $model = $this->model->addComment($data);
 
-                        $app['session']->getFlashBag()->add(
-                            'message', array(
-                                'type' => 'success',
-                                'content' => $app['translator']
-                                    ->trans('comment_added')
-                            )
-                        );
+                        $app['session']->getFlashBag()
+                            ->add(
+                                'message',
+                                array(
+                                    'type' => 'success',
+                                    'content' =>
+                                        $app['translator']->trans(
+                                            'comment_added'
+                                        )
+                                )
+                            );
                         return $app->redirect(
-                            $app['url_generator']->generate(
-                                'articles_view',
-                                array('id' => $data['article_id'])
-                            ), 301
+                            $app['url_generator']
+                                ->generate(
+                                    'articles_view',
+                                    array(
+                                        'id' => $data['article_id']
+                                    )
+                                ),
+                            301
                         );
 
                     }
                     return $app['twig']->render(
-                        'comments/add.twig', array(
-                            'form' => $form->createView(),
+                        'comments/add.twig',
+                        array(
+                            'form' => $form
+                                ->createView(),
                             'article_id' => $article_id
                         )
                     );
                 } else {
-                    $app['session']->getFlashBag()->add(
-                        'message', array(
-                            'type' => 'danger',
-                            'content' => $app['translator']
-                                ->trans('comment_not_found')
-                        )
-                    );
+                    $app['session']->getFlashBag()
+                        ->add(
+                            'message',
+                            array(
+                                'type' => 'danger',
+                                'content' => $app['translator']
+                                    ->trans('comment_not_found')
+                            )
+                        );
                     return $app->redirect(
                         $app['url_generator']->generate(
                             'articles_index'
-                        ), 301
+                        ),
+                        301
                     );
                 }
             } catch (\PDOException $e) {
@@ -177,14 +187,18 @@ class CommentsController implements ControllerProviderInterface
                     ->trans('An error occurred, please try again later'));
             }
         } else {
-            $app['session']->getFlashBag()->add(
-                'message', array(
-                    'type' => 'danger',
-                    'content' => $app['translator']->trans('log_in')
-                )
-            );
+            $app['session']->getFlashBag()
+                ->add(
+                    'message',
+                    array(
+                        'type' => 'danger',
+                        'content' => $app['translator']
+                            ->trans('log_in')
+                    )
+                );
             return $app->redirect(
-                $app['url_generator']->generate('articles_index'),
+                $app['url_generator']
+                    ->generate('articles_index'),
                 301
             );
         }
@@ -203,20 +217,16 @@ class CommentsController implements ControllerProviderInterface
     public function editAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_USER')) {
-
             try {
-
                 $id = (int)$request->get('id', 0);
 
-                $check = $this->_model->checkCommentId($id);
+                $check = $this->model->checkCommentId($id);
 
                 if ($check) {
-
-                    $comment = $this->_model->getComment($id);
+                    $comment = $this->model->getComment($id);
                     $comment['published_date'] = date('Y-m-d H:m:s');
 
                     if (count($comment)) {
-
                         $form = $app['form.factory']
                             ->createBuilder(new CommentForm(), $comment)
                             ->getForm();
@@ -226,51 +236,63 @@ class CommentsController implements ControllerProviderInterface
                         if ($form->isValid()) {
                             $data = $form->getData();
 
-                            $model = $this->_model->editComment($data);
+                            $model = $this->model->editComment($data);
 
-                            $app['session']->getFlashBag()->add(
-                                'message', array(
-                                    'type' => 'success',
-                                    'content' => 'comment_edited'
-                                )
-                            );
+                            $app['session']
+                                ->getFlashBag()
+                                ->add(
+                                    'message',
+                                    array(
+                                        'type' => 'success',
+                                        'content' => 'comment_edited'
+                                    )
+                                );
                             return $app->redirect(
                                 $app['url_generator']->generate(
                                     'articles_view',
                                     array('id' => $comment['article_id'])
-                                ), 301
+                                ),
+                                301
                             );
 
                         }
                         return $app['twig']->render(
-                            'comments/edit.twig', array(
+                            'comments/edit.twig',
+                            array(
                                 'form' => $form->createView()
                             )
                         );
                     } else {
-                        $app['session']->getFlashBag()->add(
-                            'message', array(
+                        $app['session']->getFlashBag()
+                            ->add(
+                                'message',
+                                array(
+                                    'type' => 'danger',
+                                    'content' => 'comment_not_found'
+                                )
+                            );
+                        return $app->redirect(
+                            $app['url_generator']
+                                ->generate(
+                                    '/comments/add'
+                                ),
+                            301
+                        );
+                    }
+                } else {
+                    $app['session']->getFlashBag()
+                        ->add(
+                            'message',
+                            array(
                                 'type' => 'danger',
                                 'content' => 'comment_not_found'
                             )
                         );
-                        return $app->redirect(
-                            $app['url_generator']->generate(
-                                '/comments/add'
-                            ), 301
-                        );
-                    }
-                } else {
-                    $app['session']->getFlashBag()->add(
-                        'message', array(
-                            'type' => 'danger',
-                            'content' => 'comment_not_found'
-                        )
-                    );
                     return $app->redirect(
                         $app['url_generator']->generate(
                             'articles_index'
-                        ), 301
+                        ),
+                        301
                     );
 
                 }
@@ -279,7 +301,8 @@ class CommentsController implements ControllerProviderInterface
             }
         } else {
             $app['session']->getFlashBag()->add(
-                'message', array(
+                'message',
+                array(
                     'type' => 'danger',
                     'content' => $app['translator']->trans('no_rights')
                 )
@@ -305,22 +328,25 @@ class CommentsController implements ControllerProviderInterface
     {
         if ($app['security']->isGranted('ROLE_USER')) {
             try {
-
                 $id = (int)$request->get('id', 0);
 
-                $check = $this->_model->checkCommentId($id);
+                $check = $this->model->checkCommentId($id);
 
                 if ($check) {
-
-                    $comment = $this->_model->getComment($id);
+                    $comment = $this->model->getComment($id);
 
                     $data = array();
 
                     if (count($comment)) {
                         $form = $app['form.factory']
-                            ->createBuilder('form', $data)
+                            ->createBuilder(
+                                'form',
+                                $data
+                            )
                             ->add(
-                                'comment_id', 'hidden', array(
+                                'comment_id',
+                                'hidden',
+                                array(
                                     'data' => $id,
                                 )
                             )
@@ -331,12 +357,15 @@ class CommentsController implements ControllerProviderInterface
                         $form->handleRequest($request);
 
                         if ($form->isValid()) {
-                            if ($form->get('Tak')->isClicked()) {
+                            if ($form->get('Tak')
+                                ->isClicked()) {
                                 $data = $form->getData();
-                                $model = $this->_model->deleteComment($data);
+                                $model = $this->model
+                                    ->deleteComment($data);
 
                                 $app['session']->getFlashBag()->add(
-                                    'message', array(
+                                    'message',
+                                    array(
                                         'type' => 'success',
                                         'content' => $app['translator']
                                             ->trans('comment_deleted')
@@ -346,39 +375,46 @@ class CommentsController implements ControllerProviderInterface
                                     $app['url_generator']->generate(
                                         'articles_view',
                                         array('id' => $comment['article_id'])
-                                    ), 301
+                                    ),
+                                    301
                                 );
 
                             } else {
                                 return $app->redirect(
                                     $app['url_generator']->generate(
                                         'articles_index'
-                                    ), 301
+                                    ),
+                                    301
                                 );
                             }
                         }
                         return $app['twig']->render(
-                            'comments/delete.twig', array(
+                            'comments/delete.twig',
+                            array(
                                 'form' => $form->createView()
                             )
                         );
                     } else {
                         $app['session']->getFlashBag()->add(
-                            'message', array(
+                            'message',
+                            array(
                                 'type' => 'danger',
                                 'content' => $app['translator']
                                     ->trans('comment_not_found')
                             )
                         );
                         return $app->redirect(
-                            $app['url_generator']->generate(
-                                'articles_index'
-                            ), 301
+                            $app['url_generator']
+                                ->generate(
+                                    'articles_index'
+                                ),
+                            301
                         );
                     }
                 } else {
                     $app['session']->getFlashBag()->add(
-                        'message', array(
+                        'message',
+                        array(
                             'type' => 'danger',
                             'content' => $app['translator']
                                 ->trans('comment_not_found')
@@ -387,27 +423,26 @@ class CommentsController implements ControllerProviderInterface
                     return $app->redirect(
                         $app['url_generator']->generate(
                             'articles_index'
-                        ), 301
+                        ),
+                        301
                     );
-
                 }
             } catch (\PDOException $e) {
                 $app->abort(500, $app['translator']->trans('error_occured'));
             }
-        }
-
-        else {
-            $app['session']->getFlashBag()->add(
-                'message', array(
-                    'type' => 'danger', 'content' => $app['translator']
+        } else {
+            $app['session']->getFlashBag()
+                ->add(
+                    'message',
+                    array(
+                        'type' => 'danger', 'content' => $app['translator']
                         ->trans('no_rights')
-                )
-            );
+                    )
+                );
             return $app->redirect(
                 $app['url_generator']->generate('articles_index'),
                 301
             );
-        }}
-
-
+        }
+    }
 }

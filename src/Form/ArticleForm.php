@@ -48,7 +48,8 @@ class ArticleForm extends AbstractType
 
         return $builder
             ->add(
-                'title', 'text',
+                'title',
+                'text',
                 array(
                     'label' => 'Asd',
                     'constraints' => array(
@@ -61,7 +62,8 @@ class ArticleForm extends AbstractType
                 )
             )
             ->add(
-                'content', 'textarea',
+                'content',
+                'textarea',
                 array(
                     'constraints' => array(
                         new Assert\NotBlank(),
@@ -73,7 +75,8 @@ class ArticleForm extends AbstractType
                 )
             )
             ->add(
-                'category_id', 'choice',
+                'category_id',
+                'choice',
                 array(
                     'choices' => $categories,
                     'constraints' => array(

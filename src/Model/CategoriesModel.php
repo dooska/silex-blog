@@ -33,9 +33,9 @@ class CategoriesModel
      * Database access object.
      *
      * @access protected
-     * @var $_db Doctrine\DBAL
+     * @var $db Doctrine\DBAL
      */
-    protected $_db;
+    protected $db;
 
     /**
      * Class constructor.
@@ -46,7 +46,7 @@ class CategoriesModel
      */
     public function __construct(Application $app)
     {
-        $this->_db = $app['db'];
+        $this->db = $app['db'];
     }
 
     /**
@@ -58,7 +58,7 @@ class CategoriesModel
     public function getAll()
     {
         $query = 'SELECT category_id, `category_name` FROM categories';
-        $result = $this->_db->fetchAll($query);
+        $result = $this->db->fetchAll($query);
         return !$result ? array() : $result;
     }
 
@@ -93,7 +93,7 @@ class CategoriesModel
             $query = 'SELECT category_id, `category_name`
                     FROM categories
                     WHERE category_id= :id';
-            $statement = $this->_db->prepare($query);
+            $statement = $this->db->prepare($query);
             $statement->bindValue('id', $id, \PDO::PARAM_INT);
             $statement->execute();
             $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
@@ -117,7 +117,7 @@ class CategoriesModel
                       articles.content, articles.category_id
                       FROM articles
                       WHERE articles.category_id = ?';
-            $result = $this->_db->fetchAll($query, array($id));
+            $result = $this->db->fetchAll($query, array($id));
             return $result;
         }
     }
@@ -134,7 +134,7 @@ class CategoriesModel
     public function getCategoriesPage($page, $limit)
     {
         $query = 'SELECT category_id, `category_name` FROM categories';
-        $statement = $this->_db->prepare($query);
+        $statement = $this->db->prepare($query);
         $statement->bindValue('start', ($page-1)*$limit, \PDO::PARAM_INT);
         $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
         $statement->execute();
@@ -153,7 +153,7 @@ class CategoriesModel
     {
         $pagesCount = 0;
         $sql = 'SELECT COUNT(*) as pages_count FROM categories';
-        $result = $this->_db->fetchAssoc($sql);
+        $result = $this->db->fetchAssoc($sql);
         if ($result) {
             $pagesCount =  ceil($result['pages_count']/$limit);
         }
@@ -174,11 +174,11 @@ class CategoriesModel
     }
 
     /** Save category.
-    *
-    * @access public
-    * @param array $category Categories data
-    * @retun mixed Result
-    */
+     *
+     * @access public
+     * @param array $category Categories data
+     * @retun mixed Result
+     */
     public function saveCategory($category)
     {
         if (isset($category['id'])
@@ -187,11 +187,19 @@ class CategoriesModel
             // update record
             $id = $category['id'];
             unset($category['id']);
-            return $this->_db->update(
-                'categories', $category, array('category_id' => $id));
+            return $this->db->update(
+                'categories',
+                $category,
+                array(
+                    'category_id' => $id
+                )
+            );
         } else {
             // add new record
-            return $this->_db->insert('categories', $category);
+            return $this->db->insert(
+                'categories',
+                $category
+            );
         }
     }
 
@@ -210,7 +218,7 @@ class CategoriesModel
             $id = $category['id'];
             unset($category['id']);
             $this->removeCategoryArticles($category['id']);
-            return $this->_db->
+            return $this->db->
             delete('categories', array('category_id' => $id));
         }
     }
@@ -224,8 +232,11 @@ class CategoriesModel
     protected function removeCategoryArticles($id)
     {
         $query = 'DELETE FROM `articles` WHERE `category_id`=?';
-        $this->_db->executeQuery($query, array($id));
+        $this->db->executeQuery(
+            $query,
+            array(
+                $id
+            )
+        );
     }
-
-
 }

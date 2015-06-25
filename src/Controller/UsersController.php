@@ -41,10 +41,10 @@ class UsersController implements ControllerProviderInterface
     /**
      * User Model object.
      *
-     * @var $_model
+     * @var $model
      * @access protected
      */
-    protected $_model;
+    protected $model;
 
     /**
      *
@@ -55,7 +55,7 @@ class UsersController implements ControllerProviderInterface
      */
     public function connect(Application $app)
     {
-        $this->_model = new UsersModel($app);
+        $this->model = new UsersModel($app);
         $usersController = $app['controllers_factory'];
         $usersController->post('/add', array($this, 'addAction'));
         $usersController->match('/add', array($this, 'addAction'))
@@ -81,17 +81,6 @@ class UsersController implements ControllerProviderInterface
     }
 
     /**
-     * Index action.
-     *
-     * @access public
-     * @param Silex\Application $app Silex application
-     * @param Symfony\Component\HttpFoundation\Request $request Request object
-     * @return string Output
-     */
-    public function indexAction(Application $app, Request $request)
-    {}
-
-    /**
      * View action.
      *
      * @access public
@@ -102,18 +91,20 @@ class UsersController implements ControllerProviderInterface
     public function viewAction(Application $app, Request $request)
     {
         try {
-            $currentUser = $this->_model->getCurrentUserInfo($app);
+            $currentUser = $this->model->getCurrentUserInfo($app);
 
             if (count($currentUser)) {
                 return $app['twig']->render(
-                    'users/view.twig', array(
+                    'users/view.twig',
+                    array(
                         'user' => $currentUser,
                         'userinfo' => $currentUser
                     )
                 );
             } else {
                 $app['session']->getFlashBag()->add(
-                    'message', array(
+                    'message',
+                    array(
                         'type' => 'danger',
                         'content' => $app['translator']->trans('user_not_found')
                     )
@@ -121,12 +112,11 @@ class UsersController implements ControllerProviderInterface
                 return $app->redirect(
                     $app['url_generator']->generate(
                         'articles_index'
-                    ), 301
+                    ),
+                    301
                 );
             }
-        }
-        catch (\PDOException $e)
-        {
+        } catch (\PDOException $e) {
             $app->abort(500, $app['translator']
                 ->trans('error_occured'));
         }
@@ -143,7 +133,7 @@ class UsersController implements ControllerProviderInterface
     public function deleteAction(Application $app, Request $request)
     {
         try {
-            $currentUser = $this->_model->getCurrentUserInfo($app);
+            $currentUser = $this->model->getCurrentUserInfo($app);
             $id = (int)$currentUser['id'];
 
 
@@ -151,7 +141,9 @@ class UsersController implements ControllerProviderInterface
                 $data = array();
                 $form = $app['form.factory']->createBuilder('form', $data)
                     ->add(
-                        'id', 'hidden', array(
+                        'id',
+                        'hidden',
+                        array(
                             'data' => $id,
                         )
                     )
@@ -165,10 +157,11 @@ class UsersController implements ControllerProviderInterface
                     if ($form->get('Tak')->isClicked()) {
                         $data = $form->getData();
 
-                        $this->_model->removeUser($data);
+                        $this->model->removeUser($data);
 
                         $app['session']->getFlashBag()->add(
-                            'message', array(
+                            'message',
+                            array(
                                 'type' => 'success',
                                 'content' => $app['translator']
                                     ->trans('user_deleted')
@@ -178,25 +171,29 @@ class UsersController implements ControllerProviderInterface
                         return $app->redirect(
                             $app['url_generator']->generate(
                                 'articles_index'
-                            ), 301
+                            ),
+                            301
                         );
 
                     } else {
                         return $app->redirect(
                             $app['url_generator']->generate(
                                 'articles_index'
-                            ), 301
+                            ),
+                            301
                         );
                     }
                 }
                 return $app['twig']->render(
-                    'users/delete.twig', array(
+                    'users/delete.twig',
+                    array(
                         'form' => $form->createView()
                     )
                 );
             } else {
                 $app['session']->getFlashBag()->add(
-                    'message', array(
+                    'message',
+                    array(
                         'type' => 'danger',
                         'content' => $app['translator']->trans('user_not_found')
                     )
@@ -204,7 +201,8 @@ class UsersController implements ControllerProviderInterface
                 return $app->redirect(
                     $app['url_generator']->generate(
                         'users/view.twig'
-                    ), 301
+                    ),
+                    301
                 );
             }
 

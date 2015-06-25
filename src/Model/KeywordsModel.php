@@ -33,9 +33,9 @@ class KeywordsModel
      * Database access object.
      *
      * @access protected
-     * @var $_db Doctrine\DBAL
+     * @var $db Doctrine\DBAL
      */
-    protected $_db;
+    protected $db;
 
     /**
      * Class constructor.
@@ -46,7 +46,7 @@ class KeywordsModel
      */
     public function __construct(Application $app)
     {
-        $this->_db = $app['db'];
+        $this->db = $app['db'];
     }
 
     /**
@@ -58,7 +58,7 @@ class KeywordsModel
     public function getAll()
     {
         $query = 'SELECT * FROM keywords';
-        $result = $this->_db->fetchAll($query);
+        $result = $this->db->fetchAll($query);
         return !$result ? array() : $result;
     }
 
@@ -94,7 +94,7 @@ class KeywordsModel
             $query = 'SELECT keyword_id, `word`
                         FROM keywords
                         WHERE keyword_id= :id';
-            $statement = $this->_db->prepare($query);
+            $statement = $this->db->prepare($query);
             $statement->bindValue('id', $id, \PDO::PARAM_INT);
             $statement->execute();
             $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
@@ -121,7 +121,7 @@ class KeywordsModel
                         JOIN article_keywords
                         ON articles.article_id = article_keywords.article_id
                         WHERE article_keywords.keyword_id = ?';
-            $result = $this->_db->fetchAll($query, array($id));
+            $result = $this->db->fetchAll($query, array($id));
             return $result;
         }
     }
@@ -138,7 +138,7 @@ class KeywordsModel
     public function getKeywordsPage($page, $limit)
     {
         $query = 'SELECT keyword_id, `word` FROM keywords';
-        $statement = $this->_db->prepare($query);
+        $statement = $this->db->prepare($query);
         $statement->bindValue('start', ($page-1)*$limit, \PDO::PARAM_INT);
         $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
         $statement->execute();
@@ -157,7 +157,7 @@ class KeywordsModel
     {
         $pagesCount = 0;
         $sql = 'SELECT COUNT(*) as pages_count FROM keywords';
-        $result = $this->_db->fetchAssoc($sql);
+        $result = $this->db->fetchAssoc($sql);
         if ($result) {
             $pagesCount =  ceil($result['pages_count']/$limit);
         }
@@ -191,11 +191,11 @@ class KeywordsModel
             // update record
             $id = $keyword['id'];
             unset($keyword['id']);
-            return $this->_db->
+            return $this->db->
             update('keywords', $keyword, array('keyword_id' => $id));
         } else {
             // add new record
-            return $this->_db->insert('keywords', $keyword);
+            return $this->db->insert('keywords', $keyword);
         }
     }
 
@@ -214,7 +214,7 @@ class KeywordsModel
             $id = $keyword['id'];
             unset($keyword['id']);
             $this->removeKeywordArticles((int)$keyword['id']);
-            return $this->_db->delete('keywords', array('keyword_id' => $id));
+            return $this->db->delete('keywords', array('keyword_id' => $id));
         }
     }
 
@@ -226,7 +226,7 @@ class KeywordsModel
     protected function removeKeywordArticles($id)
     {
         $query = 'DELETE FROM `article_keywords` WHERE `keyword_id`=?';
-        $this->_db->executeQuery($query, array($id));
+        $this->db->executeQuery($query, array($id));
     }
 
     /** Removes article with keyword.
@@ -240,7 +240,7 @@ class KeywordsModel
         $query = 'SELECT article_id, keyword_id
                   FROM `article_keywords`
                   WHERE `article_id` = ? AND `keyword_id` = ?';
-        $result = $this->_db->
+        $result = $this->db->
         fetchAssoc($query, array(
             (int)$data['article_id'], (int)$data['keyword_id']));
         return $result;
@@ -256,7 +256,7 @@ class KeywordsModel
     {
         $query = 'INSERT INTO `article_keywords` (`article_id`, `keyword_id`)
                   VALUES (?, ?)';
-        $result = $this->_db->
+        $result = $this->db->
         executeQuery($query, array(
             (int)$data['article_id'], (int)$data['keyword_id']));
         return $result;
@@ -271,7 +271,7 @@ class KeywordsModel
     public function disconnectKeywordAndArticle($data)
     {
         $query = 'DELETE FROM `article_keywords` WHERE `id`=?';
-        $this->_db->executeQuery($query, array($data['record_id']));
+        $this->db->executeQuery($query, array($data['record_id']));
     }
 
     /** Check if keyword exists in database.
@@ -285,7 +285,7 @@ class KeywordsModel
         $query = 'SELECT keyword_id
                   FROM `keywords`
                   WHERE(`word` = ?)';
-        $result = $this->_db->fetchAssoc($query, array($data['word']));
+        $result = $this->db->fetchAssoc($query, array($data['word']));
         return $result;
     }
 
@@ -298,9 +298,7 @@ class KeywordsModel
     public function checkIfConnectionExists($record_id)
     {
         $query = 'SELECT * FROM `article_keywords` WHERE id = ?';
-        $result = $this->_db->fetchAssoc($query, array($record_id));
+        $result = $this->db->fetchAssoc($query, array($record_id));
         return $result;
     }
-
-
 }

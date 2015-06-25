@@ -45,11 +45,11 @@ class KeywordsController implements ControllerProviderInterface
     /**
      * Keyword Model object.
      *
-     * @var $_model
+     * @var $model
      * @access protected
      */
-    protected $_model;
-    protected $_article;
+    protected $model;
+    protected $article;
 
     /**
      *
@@ -60,8 +60,8 @@ class KeywordsController implements ControllerProviderInterface
      */
     public function connect(Application $app)
     {
-        $this->_model = new KeywordsModel($app);
-        $this->_article = new ArticlesModel($app);
+        $this->model = new KeywordsModel($app);
+        $this->article = new ArticlesModel($app);
         $keywordsController = $app['controllers_factory'];
         $keywordsController->post('/add', array($this, 'addAction'));
         $keywordsController->match('/add', array($this, 'addAction'))
@@ -74,16 +74,19 @@ class KeywordsController implements ControllerProviderInterface
         $keywordsController->post('/delete/{id}', array($this, 'deleteAction'));
         $keywordsController->match('/delete/{id}', array($this, 'deleteAction'))
             ->bind('keywords_delete');
-        $keywordsController->match('/delete/{id}/', array($this, 'deleteAction'));
+        $keywordsController
+            ->match('/delete/{id}/', array($this, 'deleteAction'));
         $keywordsController->get('/view/{id}', array($this, 'viewAction'))
             ->bind('keywords_view');
         $keywordsController->get('/view/{id}/', array($this, 'viewAction'));
         $keywordsController->get('/index', array($this, 'indexAction'));
         $keywordsController->get('/index/', array($this, 'indexAction'))
             ->bind('keywords_index');
-        $keywordsController->match('/connect/{id}', array($this, 'connectAction'))
+        $keywordsController
+            ->match('/connect/{id}', array($this, 'connectAction'))
             ->bind('connect_keyword');
-        $keywordsController->match('/disconnect/{id}', array($this, 'disconnectAction'))
+        $keywordsController
+            ->match('/disconnect/{id}', array($this, 'disconnectAction'))
             ->bind('disconnect_keyword');
 //        $keywordsController->get('/{page}', array($this, 'indexAction'))
 //            ->value('page', 1)->bind('keywords_index');
@@ -104,9 +107,9 @@ class KeywordsController implements ControllerProviderInterface
             $pageLimit = 10;
             $page = (int)$request->get('page', 1);
 
-            $pagesCount = $this->_model->countKeywordsPages($pageLimit);
-            $page = $this->_model->getCurrentPageNumber($page, $pagesCount);
-            $keywords = $this->_model->getKeywordsPage($page, $pageLimit);
+            $pagesCount = $this->model->countKeywordsPages($pageLimit);
+            $page = $this->model->getCurrentPageNumber($page, $pagesCount);
+            $keywords = $this->model->getKeywordsPage($page, $pageLimit);
 
             $this->view['paginator']
                 = array('page' => $page, 'pagesCount' => $pagesCount);
@@ -130,8 +133,8 @@ class KeywordsController implements ControllerProviderInterface
     {
         try {
             $id = (int)$request->get('id', null);
-            $this->view['keyword'] = $this->_model->getKeyword($id);
-            $this->view['keyword_articles'] = $this->_model->getKeywordArticles($id);
+            $this->view['keyword'] = $this->model->getKeyword($id);
+            $this->view['keywordarticles'] = $this->model->getKeywordArticles($id);
         } catch (\PDOException $e) {
             $app->abort(404, $app['translator']
                 ->trans('error_occured'));
@@ -151,11 +154,11 @@ class KeywordsController implements ControllerProviderInterface
     public function addAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
-
-            // default values:
             try {
                 $form = $app['form.factory']->createBuilder(
-                    new KeywordAddForm(), array())
+                    new KeywordAddForm(),
+                    array()
+                )
                     ->getForm();
 
                 $form->handleRequest($request);
@@ -163,11 +166,12 @@ class KeywordsController implements ControllerProviderInterface
                 if ($form->isValid()) {
                     $data = $form->getData();
 
-                    $check = $this->_model->checkIfKeywordExists($data);
-                    if(!$check) {
-                        $this->_model->saveKeyword($data);
+                    $check = $this->model->checkIfKeywordExists($data);
+                    if (!$check) {
+                        $this->model->saveKeyword($data);
                         $app['session']->getFlashBag()->add(
-                            'message', array(
+                            'message',
+                            array(
                                 'type' => 'success', 'content' => $app['translator']->trans('keyword_added')
                             )
                         );
@@ -177,7 +181,8 @@ class KeywordsController implements ControllerProviderInterface
                         );
                     } else {
                         $app['session']->getFlashBag()->add(
-                            'message', array(
+                            'message',
+                            array(
                                 'type' => 'danger',
                                 'content' => $app['translator']->trans('keyword_exists')
                             )
@@ -197,7 +202,8 @@ class KeywordsController implements ControllerProviderInterface
             return $app['twig']->render('keywords/add.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
-                'message', array(
+                'message',
+                array(
                     'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
@@ -219,19 +225,16 @@ class KeywordsController implements ControllerProviderInterface
     public function editAction(Application $app, Request $request)
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
-
             try {
-
-
                 $keywordsModel = new KeywordsModel($app);
                 $id = (int)$request->get('id', 0);
                 $keyword = $keywordsModel->getKeyword($id);
 
                 if (count($keyword)) {
-
                     $form = $app['form.factory']->createBuilder('form', $keyword)
                         ->add(
-                            'id', 'hidden',
+                            'id',
+                            'hidden',
                             array(
                                 'data' => $id,
                                 'constraints' => array(
@@ -241,7 +244,8 @@ class KeywordsController implements ControllerProviderInterface
                             )
                         )
                         ->add(
-                            'word', 'text',
+                            'word',
+                            'text',
                             array(
                                 'label' => $app['translator']->trans('word'),
                                 'constraints' => array(
@@ -258,10 +262,11 @@ class KeywordsController implements ControllerProviderInterface
 
                     if ($form->isValid()) {
                         $data = $form->getData();
-                        $this->_model->saveKeyword($data);
+                        $this->model->saveKeyword($data);
 
                         $app['session']->getFlashBag()->add(
-                            'message', array(
+                            'message',
+                            array(
                                 'type' => 'success', 'content' => $app['translator']->trans('keyword_edited')
                             )
                         );
@@ -273,10 +278,10 @@ class KeywordsController implements ControllerProviderInterface
 
                     $this->view['id'] = $id;
                     $this->view['form'] = $form->createView();
-
                 } else {
                     $app['session']->getFlashBag()->add(
-                        'message', array(
+                        'message',
+                        array(
                             'type' => 'warning', 'content' => $app['translator']->trans('article_not_found')
                         )
                     );
@@ -292,7 +297,8 @@ class KeywordsController implements ControllerProviderInterface
             return $app['twig']->render('keywords/edit.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
-                'message', array(
+                'message',
+                array(
                     'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
@@ -315,7 +321,6 @@ class KeywordsController implements ControllerProviderInterface
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
             try {
-
                 $keywordsModel = new KeywordsModel($app);
                 $id = (int)$request->get('id', 0);
                 $keyword = $keywordsModel->getKeyword($id);
@@ -324,7 +329,9 @@ class KeywordsController implements ControllerProviderInterface
                     $data = array();
                     $form = $app['form.factory']->createBuilder('form', $data)
                         ->add(
-                            'id', 'hidden', array(
+                            'id',
+                            'hidden',
+                            array(
                                 'data' => $id,
                             )
                         )
@@ -337,10 +344,11 @@ class KeywordsController implements ControllerProviderInterface
                     if ($form->isValid()) {
                         if ($form->get('Tak')->isClicked()) {
                             $data = $form->getData();
-                            $this->_model->removeKeyword($data);
+                            $this->model->removeKeyword($data);
 
                             $app['session']->getFlashBag()->add(
-                                'message', array(
+                                'message',
+                                array(
                                     'type' => 'success',
                                     'content' => $app['translator']->trans('keyword_deleted')
                                 )
@@ -348,14 +356,16 @@ class KeywordsController implements ControllerProviderInterface
                             return $app->redirect(
                                 $app['url_generator']->generate(
                                     'keywords_index'
-                                ), 301
+                                ),
+                                301
                             );
 
                         } else {
                             return $app->redirect(
                                 $app['url_generator']->generate(
                                     'keywords_index'
-                                ), 301
+                                ),
+                                301
                             );
                         }
                     }
@@ -365,14 +375,16 @@ class KeywordsController implements ControllerProviderInterface
 
                 } else {
                     $app['session']->getFlashBag()->add(
-                        'message', array(
+                        'message',
+                        array(
                             'type' => 'danger',
                             'content' => $app['translator']->trans('article_not_found')                        )
                     );
                     return $app->redirect(
                         $app['url_generator']->generate(
                             'keywords_index'
-                        ), 301
+                        ),
+                        301
                     );
                 }
             } catch (\Exception $e) {
@@ -381,7 +393,8 @@ class KeywordsController implements ControllerProviderInterface
             return $app['twig']->render('keywords/delete.twig', $this->view);
         } else {
             $app['session']->getFlashBag()->add(
-                'message', array(
+                'message',
+                array(
                     'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
@@ -404,16 +417,17 @@ class KeywordsController implements ControllerProviderInterface
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
             try {
-
                 $article_id = (int)$request->get('id', 0);
-                $checkArticle = $this->_article->checkArticleId($article_id);
+                $checkArticle = $this->article->checkArticleId($article_id);
 
                 if ($checkArticle) {
-                    $keywords = $this->_model->getKeywordsArray();
+                    $keywords = $this->model->getKeywordsArray();
                     $form = $app['form.factory']->createBuilder(
-                        new ArticleKeywordForm(), array(
-                        'keywords' => $keywords,
-                        'article_id' => $article_id))
+                        new ArticleKeywordForm(),
+                        array(
+                            'keywords' => $keywords,
+                            'article_id' => $article_id)
+                    )
                         ->getForm();
 
                     $form->handleRequest($request);
@@ -421,26 +435,30 @@ class KeywordsController implements ControllerProviderInterface
                     if ($form->isValid()) {
                         $data = $form->getData();
 
-                        $checkTag = $this->_model->checkIfKeywordForArticleExist($data);
+                        $checkTag = $this->model->checkIfKeywordForArticleExist($data);
 
                         if (!$checkTag) {
-                            $this->_model->connectKeywordWithArticle($data);
+                            $this->model->connectKeywordWithArticle($data);
 
 
                             $app['session']->getFlashBag()->add(
-                                'message', array(
+                                'message',
+                                array(
                                     'type' => 'success',
                                     'content' => $app['translator']->trans('keyword_added')
                                 )
                             );
                             return $app->redirect(
                                 $app['url_generator']->generate(
-                                    'articles_view', array('id' => $article_id)
-                                ), 301
+                                    'articles_view',
+                                    array('id' => $article_id)
+                                ),
+                                301
                             );
                         } else {
                             $app['session']->getFlashBag()->add(
-                                'message', array(
+                                'message',
+                                array(
                                     'type' => 'danger',
                                     'content' => $app['translator']->trans('connections_exists')
                                 )
@@ -448,20 +466,25 @@ class KeywordsController implements ControllerProviderInterface
                             return $app->redirect(
                                 $app['url_generator']->generate(
                                     'articles_index'
-                                ), 301
+                                ),
+                                301
                             );
                         }
 
                     }
-                    return $app['twig']->render('keywords/connect.twig', array(
+                    return $app['twig']->render(
+                        'keywords/connect.twig',
+                        array(
                             'form' => $form->createView()
                         )
                     );
 
-                }  else {
+                } else {
                     $app['session']->getFlashBag()->add(
-                        'message', array(
-                            'type' => 'warning', 'content' => $app['translator']->trans('article_not_found')
+                        'message',
+                        array(
+                            'type' => 'warning',
+                            'content' => $app['translator']->trans('article_not_found')
                         )
                     );
                     return $app->redirect(
@@ -469,13 +492,14 @@ class KeywordsController implements ControllerProviderInterface
                         301
                     );
                 }
-            } catch (\PDOException $e){
+            } catch (\PDOException $e) {
                 $app->abort(404, $app['translator']->trans('article_not_found'));
             }
 
         } else {
             $app['session']->getFlashBag()->add(
-                'message', array(
+                'message',
+                array(
                     'type' => 'danger', 'content' => $app['translator']->trans('no_rights')
                 )
             );
@@ -499,17 +523,17 @@ class KeywordsController implements ControllerProviderInterface
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
             try {
-
-
                 $record_id = (int)$request->get('id', 0);
-                $checkRecordId = $this->_model
+                $checkRecordId = $this->model
                     ->checkIfConnectionExists($record_id);
                 $article_id = $checkRecordId['article_id'];
 
                 if ($checkRecordId) {
                     $form = $app['form.factory']->createBuilder(
-                        new DeleteConnectionForm(), array(
-                        'record_id' => $record_id))
+                        new DeleteConnectionForm(),
+                        array(
+                        'record_id' => $record_id)
+                    )
                         ->getForm();
 
                     $form->handleRequest($request);
@@ -518,10 +542,11 @@ class KeywordsController implements ControllerProviderInterface
                         if ($form->get('Tak')->isClicked()) {
                             $data = $form->getData();
 
-                            $this->_model->disconnectKeywordAndArticle($data);
+                            $this->model->disconnectKeywordAndArticle($data);
 
                             $app['session']->getFlashBag()->add(
-                                'message', array(
+                                'message',
+                                array(
                                     'type' => 'success',
                                     'content' => $app['translator']
                                         ->trans('keyword_deleted')
@@ -530,27 +555,35 @@ class KeywordsController implements ControllerProviderInterface
                             return $app->redirect(
                                 $app['url_generator']->generate(
                                     'articles_view',
-                                    array('id' => (int)$article_id)
-                                ), 301
+                                    array(
+                                        'id' => (int)$article_id
+                                    )
+                                ),
+                                301
                             );
 
                         } else {
                             return $app->redirect(
                                 $app['url_generator']->generate(
                                     'articles_view',
-                                    array('id' => (int)$article_id)
-                                ), 301
+                                    array(
+                                        'id' => (int)$article_id
+                                    )
+                                ),
+                                301
                             );
                         }
                     }
-                    return $app['twig']->render('keywords/disconnect.twig',
+                    return $app['twig']->render(
+                        'keywords/disconnect.twig',
                         array(
                             'form' => $form->createView()
                         )
                     );
                 } else {
                     $app['session']->getFlashBag()->add(
-                        'message', array(
+                        'message',
+                        array(
                             'type' => 'warning',
                             'content' => $app['translator']
                                 ->trans('article_not_found')
@@ -561,14 +594,15 @@ class KeywordsController implements ControllerProviderInterface
                         301
                     );
                 }
-            } catch (\PDOException $e){
+            } catch (\PDOException $e) {
                 $app->abort(404, $app['translator']
                     ->trans('article_not_found'));
             }
 
         } else {
             $app['session']->getFlashBag()->add(
-                'message', array(
+                'message',
+                array(
                     'type' => 'danger',
                     'content' => $app['translator']->trans('no_rights')
                 )
@@ -580,21 +614,3 @@ class KeywordsController implements ControllerProviderInterface
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

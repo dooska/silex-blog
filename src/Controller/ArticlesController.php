@@ -44,14 +44,14 @@ class ArticlesController implements ControllerProviderInterface
     /**
      * Article Model object.
      *
-     * @var $_model
+     * @var $model
      * @access protected
      */
-    protected $_model;
-    protected $_category_model;
-    protected $_comments_model;
-    protected $_keywords_model;
-    protected $_users_model;
+    protected $model;
+    protected $category_model;
+    protected $comments_model;
+    protected $keywords_model;
+    protected $users_model;
 
     /**
      *
@@ -62,10 +62,10 @@ class ArticlesController implements ControllerProviderInterface
      */
     public function connect(Application $app)
     {
-        $this->_model = new ArticlesModel($app);
-        $this->_category_model = new CategoriesModel($app);
-        $this->_comments_model = new CommentsModel($app);
-        $this->_users_model = new UsersModel($app);
+        $this->model = new ArticlesModel($app);
+        $this->category_model = new CategoriesModel($app);
+        $this->comments_model = new CommentsModel($app);
+        $this->users_model = new UsersModel($app);
         $articlesController = $app['controllers_factory'];
         $articlesController->post('/add', array($this, 'addAction'));
         $articlesController->match('/add', array($this, 'addAction'))
@@ -102,17 +102,20 @@ class ArticlesController implements ControllerProviderInterface
     public function indexAction(Application $app, Request $request)
     {
         try {
-
             $pageLimit = 10;
             $page = (int) $request->get('page', 1);
-            $pagesCount = $this->_model->countArticlesPages($pageLimit);
-            $page = $this->_model->getCurrentPageNumber($page, $pagesCount);
-            $articles = $this->_model->getArticlesPage($page, $pageLimit);
+            $pagesCount = $this->model->countArticlesPages($pageLimit);
+            $page = $this->model->getCurrentPageNumber($page, $pagesCount);
+            $articles = $this->model->getArticlesPage($page, $pageLimit);
             $this->view['paginator']
                 = array('page' => $page, 'pagesCount' => $pagesCount);
             $this->view['articles'] = $articles;
-        } catch (\PDOException $e){
-            $app->abort(404, $app['translator']->trans('articles_not_found'));
+        } catch (\PDOException $e) {
+            $app->abort(
+                404,
+                $app['translator']
+                    ->trans('articles_not_found')
+            );
         }
         return $app['twig']->render('articles/index.twig', $this->view);
     }
@@ -129,16 +132,16 @@ class ArticlesController implements ControllerProviderInterface
     {
         try {
             $id = (int)$request->get('id', null);
-            $this->view['article'] = $this->_model->getArticle($id);
+            $this->view['article'] = $this->model->getArticle($id);
             $this->view['comments'] =
-                $this->_comments_model->getCommentsList($id);
-            $this->view['keywords'] = $this->_model->getArticleKeywords($id);
-            $checkUser = $this->_users_model->_isLoggedIn($app);
-        } catch (\PDOException $e){
+                $this->comments_model->getCommentsList($id);
+            $this->view['keywords'] = $this->model->getArticleKeywords($id);
+            $checkUser = $this->users_model->isLoggedIn($app);
+        } catch (\PDOException $e) {
             $app->abort(404, $app['translator']->trans('article_not_found'));
         }
-        if($checkUser) {
-            $this->view['user'] = $this->_users_model->getCurrentUserInfo($app);
+        if ($checkUser) {
+            $this->view['user'] = $this->users_model->getCurrentUserInfo($app);
         }
         return $app['twig']->render('articles/view.twig', $this->view);
     }
@@ -156,21 +159,26 @@ class ArticlesController implements ControllerProviderInterface
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
             try {
-
                 $data = array(
                     'title' => 'Title',
                     'content' => 'Content',
                 );
 
-                $categories = $this->_category_model->getCategoriesToForm();
+                $categories = $this->category_model->getCategoriesToForm();
 
                 $form = $app['form.factory']->createBuilder('form', $data)
                     ->add(
-                        'title', 'text', array(
-                            'label' => $app['translator']->trans('title'),
+                        'title',
+                        'text',
+                        array(
+                            'label' => $app['translator']
+                                ->trans('title'),
                             'constraints' => array(
                                 new Assert\NotBlank(),
-                                new Assert\Length(array('min' => 5))
+                                new Assert\Length(
+                                    array(
+                                        'min' => 5)
+                                )
                             ),
                             'attr' => array(
                                 'class' => 'form-control'
@@ -178,12 +186,15 @@ class ArticlesController implements ControllerProviderInterface
                         )
                     )
                     ->add(
-                        'content', 'textarea',
+                        'content',
+                        'textarea',
                         array(
                             'label' => $app['translator']->trans('content'),
                             'constraints' => array(
                                 new Assert\NotBlank(),
-                                new Assert\Length(array('min' => 5))
+                                new Assert\Length(
+                                    array('min' => 5)
+                                )
                             ),
                             'attr' => array(
                                 'class' => 'form-control'
@@ -191,9 +202,11 @@ class ArticlesController implements ControllerProviderInterface
                         )
                     )
                     ->add(
-                        'category_id', 'choice',
+                        'category_id',
+                        'choice',
                         array(
-                            'label' => $app['translator']->trans('category'),
+                            'label' => $app['translator']
+                                ->trans('category'),
                             'choices' => $categories,
                             'constraints' => array(
                                 new Assert\NotBlank(),
@@ -207,18 +220,18 @@ class ArticlesController implements ControllerProviderInterface
                 $form->handleRequest($request);
 
                 if ($form->isValid()) {
-
                     $data = $form->getData();
-                    $this->_model->saveArticle($data);
+                    $this->model->saveArticle($data);
 
-
-                    $app['session']->getFlashBag()->add(
-                        'message', array(
-                            'type' => 'success',
-                            'content' =>
-                                $app['translator']->trans('article_added')
-                        )
-                    );
+                    $app['session']->getFlashBag()
+                        ->add(
+                            'message',
+                            array(
+                                'type' => 'success',
+                                'content' => $app['translator']
+                                    ->trans('article_added')
+                            )
+                        );
 
                     return $app->redirect(
                         $app['url_generator']->generate('articles_index'),
@@ -232,10 +245,14 @@ class ArticlesController implements ControllerProviderInterface
             $this->view['form'] = $form->createView();
 
 
-            return $app['twig']->render('articles/add.twig', $this->view);
+            return $app['twig']->render(
+                'articles/add.twig',
+                $this->view
+            );
         } else {
             $app['session']->getFlashBag()->add(
-                'message', array(
+                'message',
+                array(
                     'type' => 'danger',
                     'content' => $app['translator']->trans('no_rights')
                 )
@@ -259,23 +276,24 @@ class ArticlesController implements ControllerProviderInterface
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
             try {
-
                 $articlesModel = new ArticlesModel($app);
                 $id = (int) $request->get('id', 0);
                 $article = $articlesModel->getArticle($id);
-                $categories = $this->_category_model->getCategoriesToForm();
+                $categories = $this->category_model->getCategoriesToForm();
 
                 if (count($article)) {
-
                     $form = $app['form.factory']
                         ->createBuilder('form', $article)
                         ->add(
-                            'id', 'hidden',
+                            'id',
+                            'hidden',
                             array(
                                 'data' => $id,
                                 'constraints' => array(
                                     new Assert\NotBlank(),
-                                    new Assert\Type(array('type' => 'digit'))
+                                    new Assert\Type(
+                                        array('type' => 'digit')
+                                    )
                                 ),
                                 'attr' => array(
                                     'class' => 'form-control'
@@ -283,12 +301,15 @@ class ArticlesController implements ControllerProviderInterface
                             )
                         )
                         ->add(
-                            'title', 'text',
+                            'title',
+                            'text',
                             array(
                                 'label' => $app['translator']->trans('title'),
                                 'constraints' => array(
                                     new Assert\NotBlank(),
-                                    new Assert\Length(array('min' => 5))
+                                    new Assert\Length(
+                                        array('min' => 5)
+                                    )
                                 ),
                                 'attr' => array(
                                     'class' => 'form-control'
@@ -296,12 +317,15 @@ class ArticlesController implements ControllerProviderInterface
                             )
                         )
                         ->add(
-                            'content', 'text',
+                            'content',
+                            'text',
                             array(
                                 'label' => $app['translator']->trans('content'),
                                 'constraints' => array(
                                     new Assert\NotBlank(),
-                                    new Assert\Length(array('min' => 5))
+                                    new Assert\Length(
+                                        array('min' => 5)
+                                    )
                                 ),
                                 'attr' => array(
                                     'class' => 'form-control'
@@ -309,7 +333,8 @@ class ArticlesController implements ControllerProviderInterface
                             )
                         )
                         ->add(
-                            'category_id', 'choice',
+                            'category_id',
+                            'choice',
                             array(
                                 'label' => $app['translator']
                                     ->trans('category'),
@@ -331,14 +356,16 @@ class ArticlesController implements ControllerProviderInterface
                         $articlesModel->saveArticle($data);
 
                         $app['session']->getFlashBag()->add(
-                            'message', array(
+                            'message',
+                            array(
                                 'type' => 'success',
                                 'content' => $app['translator']
                                     ->trans('article_edited')
                             )
                         );
                         return $app->redirect(
-                            $app['url_generator']->generate('articles_index'),
+                            $app['url_generator']
+                                ->generate('articles_index'),
                             301
                         );
                     }
@@ -348,7 +375,8 @@ class ArticlesController implements ControllerProviderInterface
 
                 } else {
                     $app['session']->getFlashBag()->add(
-                        'message', array(
+                        'message',
+                        array(
                             'type' => 'warning',
                             'content' => $app['translator']
                                 ->trans('article_not_found')
@@ -363,10 +391,14 @@ class ArticlesController implements ControllerProviderInterface
                 $app->abort(500, $app['translator']->trans('error_occured'));
             }
 
-            return $app['twig']->render('articles/edit.twig', $this->view);
+            return $app['twig']->render(
+                'articles/edit.twig',
+                $this->view
+            );
         } else {
             $app['session']->getFlashBag()->add(
-                'message', array(
+                'message',
+                array(
                     'type' => 'danger',
                     'content' => $app['translator']->trans('no_rights')
                 )
@@ -390,21 +422,27 @@ class ArticlesController implements ControllerProviderInterface
     {
         if ($app['security']->isGranted('ROLE_ADMIN')) {
             try {
-
                 $articlesModel = new ArticlesModel($app);
                 $id = (int) $request->get('id', 0);
                 $article = $articlesModel->getArticle($id);
 
                 if (count($article)) {
                     $data = array();
-                    $form = $app['form.factory']->createBuilder('form', $data)
+                    $form = $app['form.factory']->createBuilder(
+                        'form',
+                        $data
+                    )
                         ->add(
-                            'id', 'hidden', array(
+                            'id',
+                            'hidden',
+                            array(
                                 'data' => $id,
                             )
                         )
                         ->add(
-                            'Tak','submit', array(
+                            'Tak',
+                            'submit',
+                            array(
                                 'label' => $app['translator']->trans('yes'),
                                 'attr' => array(
                                     'class' => 'btn btn-danger'
@@ -412,7 +450,9 @@ class ArticlesController implements ControllerProviderInterface
                             )
                         )
                         ->add(
-                            'Nie','submit', array(
+                            'Nie',
+                            'submit',
+                            array(
                                 'label' => $app['translator']->trans('no'),
                                 'attr' => array(
                                     'class' => 'btn btn-default'
@@ -427,10 +467,11 @@ class ArticlesController implements ControllerProviderInterface
                         if ($form->get('Tak')->isClicked()) {
                             $data = $form->getData();
 
-                            $this->_model->removeArticle($data);
+                            $this->model->removeArticle($data);
 
                             $app['session']->getFlashBag()->add(
-                                'message', array(
+                                'message',
+                                array(
                                     'type' => 'success',
                                     'content' =>
                                         'article_deleted'
@@ -439,14 +480,16 @@ class ArticlesController implements ControllerProviderInterface
                             return $app->redirect(
                                 $app['url_generator']->generate(
                                     'articles_index'
-                                ), 301
+                                ),
+                                301
                             );
 
                         } else {
                             return $app->redirect(
                                 $app['url_generator']->generate(
                                     'articles_index'
-                                ), 301
+                                ),
+                                301
                             );
                         }
                     }
@@ -456,7 +499,8 @@ class ArticlesController implements ControllerProviderInterface
 
                 } else {
                     $app['session']->getFlashBag()->add(
-                        'message', array(
+                        'message',
+                        array(
                             'type' => 'danger',
                             'content' => 'article_not_found'
                         )
@@ -464,16 +508,21 @@ class ArticlesController implements ControllerProviderInterface
                     return $app->redirect(
                         $app['url_generator']->generate(
                             'articles_index'
-                        ), 301
+                        ),
+                        301
                     );
                 }
             } catch (\Exception $e) {
                 $app->abort(500, $app['translator']->trans('error_occured'));
             }
-            return $app['twig']->render('articles/delete.twig', $this->view);
+            return $app['twig']->render(
+                'articles/delete.twig',
+                $this->view
+            );
         } else {
             $app['session']->getFlashBag()->add(
-                'message', array(
+                'message',
+                array(
                     'type' => 'danger',
                     'content' => $app['translator']->trans('no_rights')
                 )
@@ -484,6 +533,4 @@ class ArticlesController implements ControllerProviderInterface
             );
         }
     }
-
-
 }

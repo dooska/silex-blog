@@ -43,7 +43,7 @@ class IndexController implements ControllerProviderInterface
      * @var $_model
      * @access protected
      */
-    protected $_model;
+    protected $model;
 
     /**
      *
@@ -54,7 +54,7 @@ class IndexController implements ControllerProviderInterface
      */
     public function connect(Application $app)
     {
-        $this->_model = new IndexModel($app);
+        $this->model = new IndexModel($app);
         $indexController = $app['controllers_factory'];
         $indexController->get('/', array($this, 'index'))->bind('/index');
         return $indexController;
@@ -72,5 +72,4 @@ class IndexController implements ControllerProviderInterface
             'index/index.twig'
         );
     }
-
 }
