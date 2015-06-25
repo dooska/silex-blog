@@ -1,3 +1,5 @@
+CREATE DATABASE  IF NOT EXISTS `silex-blog` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE `silex-blog`;
 -- MySQL dump 10.13  Distrib 5.5.40, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: silex-blog
@@ -27,7 +29,7 @@ CREATE TABLE `article_keywords` (
   `article_id` int(11) NOT NULL,
   `keyword_id` varchar(45) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -36,7 +38,7 @@ CREATE TABLE `article_keywords` (
 
 LOCK TABLES `article_keywords` WRITE;
 /*!40000 ALTER TABLE `article_keywords` DISABLE KEYS */;
-INSERT INTO `article_keywords` VALUES (1,3,'2'),(3,3,'3'),(4,4,'3'),(5,4,'2'),(10,3,'7'),(11,5,'6'),(12,5,'8');
+INSERT INTO `article_keywords` VALUES (3,3,'3'),(4,4,'3'),(12,5,'8'),(16,9,'7'),(18,3,'8'),(19,3,'5'),(21,11,'7');
 /*!40000 ALTER TABLE `article_keywords` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -55,7 +57,7 @@ CREATE TABLE `articles` (
   `user_id` tinyint(4) NOT NULL,
   `category_id` int(11) NOT NULL,
   PRIMARY KEY (`article_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -64,7 +66,7 @@ CREATE TABLE `articles` (
 
 LOCK TABLES `articles` WRITE;
 /*!40000 ALTER TABLE `articles` DISABLE KEYS */;
-INSERT INTO `articles` VALUES (3,'Title','Content','0000-00-00',0,2),(4,'PHP11','php11','0000-00-00',0,2),(5,'Title','Content','0000-00-00',0,2),(6,'Title','Content','0000-00-00',0,3);
+INSERT INTO `articles` VALUES (3,'Title','Content','0000-00-00',0,2),(5,'Title','Content','0000-00-00',0,2),(6,'Title','Content','0000-00-00',0,3),(8,'Titlesadfgh','Contentsadfgh','0000-00-00',0,4),(9,'asdfghjk','sdafjkl','0000-00-00',0,4),(10,'ttestsetset','testsetset','0000-00-00',0,4);
 /*!40000 ALTER TABLE `articles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -79,7 +81,7 @@ CREATE TABLE `categories` (
   `category_id` int(11) NOT NULL AUTO_INCREMENT,
   `category_name` varchar(255) NOT NULL,
   PRIMARY KEY (`category_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -88,7 +90,7 @@ CREATE TABLE `categories` (
 
 LOCK TABLES `categories` WRITE;
 /*!40000 ALTER TABLE `categories` DISABLE KEYS */;
-INSERT INTO `categories` VALUES (2,'PHP'),(3,'Bazy danych');
+INSERT INTO `categories` VALUES (2,'PHP'),(4,'Testowa');
 /*!40000 ALTER TABLE `categories` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -106,7 +108,7 @@ CREATE TABLE `comments` (
   `article_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   PRIMARY KEY (`comment_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -115,7 +117,7 @@ CREATE TABLE `comments` (
 
 LOCK TABLES `comments` WRITE;
 /*!40000 ALTER TABLE `comments` DISABLE KEYS */;
-INSERT INTO `comments` VALUES (1,'asdsdasafa','2015-06-12 00:00:00',3,0),(2,'fghj,hgfdsadghj,hgfdsafghj,','2015-06-12 00:00:00',3,0),(4,'sdefesfwefe','2015-06-20 00:00:00',4,0),(5,'sdefesfwefe','2015-06-20 00:00:00',4,0),(6,'sdefesfwefe','2015-06-20 00:00:00',4,0),(7,'radeksdfgh','2015-06-20 13:06:56',4,0),(8,'erfghjrfdf','2015-06-20 13:06:12',3,9),(9,'nghfwaerhj,jg','2015-06-20 13:06:00',5,9),(10,'adege gr','2015-06-20 13:06:00',3,9),(11,'ssfg hte e','2015-06-20 13:06:00',4,9),(12,'sdafg dfdg d','2015-06-20 13:06:00',3,9),(13,'asdfghjk/','2015-06-20 15:06:00',3,10);
+INSERT INTO `comments` VALUES (1,'asdsdasafa','2015-06-12 00:00:00',3,0),(2,'fghj,hgfdsadghj,hgfdsafghj,','2015-06-12 00:00:00',3,0),(4,'sdefesfwefe','2015-06-20 00:00:00',4,0),(5,'sdefesfwefe','2015-06-20 00:00:00',4,0),(6,'sdefesfwefe','2015-06-20 00:00:00',4,0),(7,'radeksdfgh','2015-06-20 13:06:56',4,0),(8,'erfghjrfdf','2015-06-20 13:06:12',3,9),(10,'adege gr','2015-06-20 13:06:00',3,9),(11,'ssfg hte e','2015-06-20 13:06:00',4,9),(12,'sdafg dfdg d','2015-06-20 13:06:00',3,9),(13,'asdfghjk/','2015-06-20 15:06:00',3,10),(14,'sfdghjhe the te eh','2015-06-23 11:06:00',3,9);
 /*!40000 ALTER TABLE `comments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -139,7 +141,7 @@ CREATE TABLE `keywords` (
 
 LOCK TABLES `keywords` WRITE;
 /*!40000 ALTER TABLE `keywords` DISABLE KEYS */;
-INSERT INTO `keywords` VALUES (2,'erthkjh'),(4,'post'),(5,'asdfg'),(6,'qwe'),(7,'asd'),(8,'adsfg');
+INSERT INTO `keywords` VALUES (2,'poiuy'),(4,'post213213'),(5,'asdfg'),(6,'qwe'),(7,'asd'),(8,'testetsetes  dfghjk');
 /*!40000 ALTER TABLE `keywords` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -205,4 +207,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-06-20 15:33:13
+-- Dump completed on 2015-06-26  1:06:03
