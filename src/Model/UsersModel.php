@@ -232,6 +232,8 @@ class UsersModel
     }
 
     /**
+     * Gets current user info.
+     *
      * @param $app
      * @access public
      *

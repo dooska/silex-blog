@@ -1,0 +1,216 @@
+<?php
+/**
+ * User controller
+ *
+ * PHP version 5
+ *
+ * @category Controller
+ * @package  Controller
+ * @author   Dominika Wojna
+ * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
+ * @version  SVN: $id$
+ * @link     wierzba.wzks.uj.edu.pl/~12_wojna
+ */
+
+namespace Controller;
+
+use Silex\Application;
+use Silex\ControllerProviderInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\Constraints as Assert;
+use Model\UsersModel;
+
+/**
+ * Class UserController
+ *
+ * @category Controller
+ * @package  Controller
+ * @author   Dominika Wojna
+ * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
+ * @version  Release: <package_version>
+ * @link     wierzba.wzks.uj.edu.pl/~12_wojna
+ * @uses Silex\Application
+ * @uses Silex\ControllerProviderInterface
+ * @uses Symfony\Component\HttpFoundation\Request
+ * @uses Symfony\Component\Validator\Constraints
+ * @uses Model\UserModel
+ * @uses Model\CategoriesModel
+ */
+class UsersController implements ControllerProviderInterface
+{
+    /**
+     * User Model object.
+     *
+     * @var $model
+     * @access protected
+     */
+    protected $model;
+
+    /**
+     * Function connect
+     * @param Application $app application object
+     *
+     * @access public
+     * @return \Silex\ControllerCollection
+     */
+    public function connect(Application $app)
+    {
+        $this->model = new UsersModel($app);
+        $usersController = $app['controllers_factory'];
+        $usersController->post('/add', array($this, 'addAction'));
+        $usersController->match('/add', array($this, 'addAction'))
+            ->bind('users_add');
+        $usersController->match('/add/', array($this, 'addAction'));
+        $usersController->post('/edit', array($this, 'editAction'));
+        $usersController->match('/edit', array($this, 'editAction'))
+            ->bind('users_edit');
+        $usersController->match('/edit', array($this, 'editAction'));
+        $usersController->post('/delete', array($this, 'deleteAction'));
+        $usersController->match('/delete', array($this, 'deleteAction'))
+            ->bind('users_delete');
+        $usersController->match('/delete', array($this, 'deleteAction'));
+        $usersController->get('/view', array($this, 'viewAction'))
+            ->bind('users_view');
+        $usersController->get('/view', array($this, 'viewAction'));
+        $usersController->get('/index', array($this, 'indexAction'));
+        $usersController->get('/index/', array($this, 'indexAction'))
+            ->bind('users_index');
+//        $usersController->get('/{page}', array($this, 'indexAction'))
+//            ->value('page', 1)->bind('users_index');
+        return $usersController;
+    }
+
+    /**
+     * View action.
+     *
+     * @access public
+     * @param Silex\Application $app Silex application
+     * @param Symfony\Component\HttpFoundation\Request $request Request object
+     * @return string Output
+     */
+    public function viewAction(Application $app, Request $request)
+    {
+        try {
+            $currentUser = $this->model->getCurrentUserInfo($app);
+
+            if (count($currentUser)) {
+                return $app['twig']->render(
+                    'users/view.twig',
+                    array(
+                        'user' => $currentUser,
+                        'userinfo' => $currentUser
+                    )
+                );
+            } else {
+                $app['session']->getFlashBag()->add(
+                    'message',
+                    array(
+                        'type' => 'danger',
+                        'content' => $app['translator']->trans('user_not_found')
+                    )
+                );
+                return $app->redirect(
+                    $app['url_generator']->generate(
+                        'articles_index'
+                    ),
+                    301
+                );
+            }
+        } catch (\PDOException $e) {
+            $app->abort(500, $app['translator']
+                ->trans('error_occured'));
+        }
+    }
+
+    /**
+     * Delete action.
+     *
+     * @access public
+     * @param Silex\Application $app Silex application
+     * @param Symfony\Component\HttpFoundation\Request $request Request object
+     * @return string Output
+     */
+    public function deleteAction(Application $app, Request $request)
+    {
+        try {
+            $currentUser = $this->model->getCurrentUserInfo($app);
+            $id = (int)$currentUser['id'];
+
+
+            if (count($currentUser)) {
+                $data = array();
+                $form = $app['form.factory']->createBuilder('form', $data)
+                    ->add(
+                        'id',
+                        'hidden',
+                        array(
+                            'data' => $id,
+                        )
+                    )
+                    ->add('Tak', 'submit')
+                    ->add('Nie', 'submit')
+                    ->getForm();
+
+                $form->handleRequest($request);
+
+                if ($form->isValid()) {
+                    if ($form->get('Tak')->isClicked()) {
+                        $data = $form->getData();
+
+                        $this->model->removeUser($data);
+
+                        $app['session']->getFlashBag()->add(
+                            'message',
+                            array(
+                                'type' => 'success',
+                                'content' => $app['translator']
+                                    ->trans('user_deleted')
+
+                            )
+                        );
+                        return $app->redirect(
+                            $app['url_generator']->generate(
+                                'articles_index'
+                            ),
+                            301
+                        );
+
+                    } else {
+                        return $app->redirect(
+                            $app['url_generator']->generate(
+                                'articles_index'
+                            ),
+                            301
+                        );
+                    }
+                }
+                return $app['twig']->render(
+                    'users/delete.twig',
+                    array(
+                        'form' => $form->createView()
+                    )
+                );
+            } else {
+                $app['session']->getFlashBag()->add(
+                    'message',
+                    array(
+                        'type' => 'danger',
+                        'content' => $app['translator']->trans('user_not_found')
+                    )
+                );
+                return $app->redirect(
+                    $app['url_generator']->generate(
+                        'users/view.twig'
+                    ),
+                    301
+                );
+            }
+
+        } catch (\PDOException $e) {
+            $app->abort(500, $app['translator']
+                ->trans('error_occured'));
+        }
+
+    }
+}
+

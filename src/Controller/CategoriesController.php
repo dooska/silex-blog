@@ -46,7 +46,7 @@ class CategoriesController implements ControllerProviderInterface
     protected $model;
 
     /**
-     *
+     * Function connect.
      * @param Application $app application object
      *
      * @access public

@@ -46,7 +46,7 @@ class IndexController implements ControllerProviderInterface
     protected $model;
 
     /**
-     *
+     * Function connect.
      * @param Application $app application object
      *
      * @access public
@@ -60,7 +60,7 @@ class IndexController implements ControllerProviderInterface
         return $indexController;
     }
     /**
-     *
+     * Function index.
      * @param Application $app
      *
      * @access public

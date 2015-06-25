@@ -48,12 +48,41 @@ class ArticlesController implements ControllerProviderInterface
      * @access protected
      */
     protected $model;
+
+    /**
+     * Category Model object.
+     *
+     * @var $category_model
+     * @access protected
+     */
     protected $category_model;
+
+    /**
+     * Comments Model object.
+     *
+     * @var $comments_model
+     * @access protected
+     */
     protected $comments_model;
+
+    /**
+     * Keywords Model object.
+     *
+     * @var $keywords_model
+     * @access protected
+     */
     protected $keywords_model;
+
+    /**
+     * Users Model object.
+     *
+     * @var $users_model
+     * @access protected
+     */
     protected $users_model;
 
     /**
+     * Function connect
      *
      * @param Application $app application object
      *

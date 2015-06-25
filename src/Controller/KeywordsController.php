@@ -49,10 +49,17 @@ class KeywordsController implements ControllerProviderInterface
      * @access protected
      */
     protected $model;
+
+    /**
+     * Article Model object.
+     *
+     * @var $article
+     * @access protected
+     */
     protected $article;
 
     /**
-     *
+     * Function connect
      * @param Application $app application object
      *
      * @access public

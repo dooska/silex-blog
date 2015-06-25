@@ -66,7 +66,7 @@ class CommentsController implements ControllerProviderInterface
 
 
     /**
-     *
+     * Function connect.
      * @param Application $app application object
      *
      * @access public

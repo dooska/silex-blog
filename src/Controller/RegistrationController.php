@@ -32,6 +32,12 @@ class RegistrationController implements ControllerProviderInterface
      */
     protected $view = array();
 
+    /**
+     * Database object,
+     *
+     * @access protected
+     * @var object $model
+     */
     protected $model;
 
     /**
